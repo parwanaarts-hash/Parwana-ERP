@@ -1,21 +1,15 @@
-import { pgTable, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const purchaseGatePassItemsTable = pgTable("purchase_gate_pass_items", {
   id: serial("id").primaryKey(),
 
-  // Planning document Section 2.2: Each item row belongs to a parent gate pass header.
-  // Column is integer — consistent with all primary keys in this project (serial = integer).
-  // TODO: Foreign key constraint to purchase_gate_passes table will be added after the
+  // TODO: Parent relationship (purchase_gate_pass_id) will be implemented after the
   // complete database relationship architecture is finalized and approved.
-  purchaseGatePassId: integer("purchase_gate_pass_id").notNull(),
 
-  // Planning document Section 2.2 Main Fields: "Product"
-  // Column is integer — consistent with all primary keys in this project (serial = integer).
-  // TODO: Foreign key constraint to products table will be added after the complete
+  // TODO: Product relationship (product_id) will be implemented after the complete
   // database relationship architecture is finalized and approved.
-  productId: integer("product_id").notNull(),
 
   // Planning document Section 2.2 Main Fields: "Quantity" / "Gate Pass Quantity"
   // "Ye supplier ke Gate Pass par likhi hui original quantity hogi."
