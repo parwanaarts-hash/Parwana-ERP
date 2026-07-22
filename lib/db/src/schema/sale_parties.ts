@@ -1,4 +1,4 @@
-import { pgTable, serial, text, numeric, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -12,13 +12,9 @@ export const salePartiesTable = pgTable("sale_parties", {
   name: text("name").notNull(),
 
   // Planning document Section 2.1 (Sale Parties): "Credit Limit bhi is master mein store hogi."
-  // Explicitly defined as a stored field in the master record.
-  // TODO: Planning document does NOT define the exact data type, precision, or scale for
-  // Credit Limit. Current implementation uses numeric — will be finalized after architecture
-  // approval.
-  // NOTE: Credit Limit business logic (Dashboard alerts, Balance Sheet highlighting,
-  // receivable alerts) is NOT implemented here — that is application-layer logic.
-  creditLimit: numeric("credit_limit"),
+  // TODO: Credit Limit field will be implemented after the complete database architecture
+  // is finalized and approved. Planning document defines this field must be stored but does
+  // NOT define its datatype.
 
   // TODO: Planning document does NOT explicitly define any additional fields for Sale Parties
   // (e.g. phone, address, city, opening balance, etc.).
