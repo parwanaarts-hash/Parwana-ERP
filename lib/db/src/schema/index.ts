@@ -17,3 +17,4 @@ export * from "./purchase_bill_items";
 export * from "./sales_bills";
 export * from "./sales_bill_items";
 export * from "./return_bills";
+export * from "./return_bill_items";
