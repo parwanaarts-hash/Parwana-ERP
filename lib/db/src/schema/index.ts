@@ -15,3 +15,4 @@ export * from "./return_gate_pass_items";
 export * from "./purchase_bills";
 export * from "./purchase_bill_items";
 export * from "./sales_bills";
+export * from "./sales_bill_items";
