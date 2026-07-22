@@ -8,11 +8,7 @@ export const companyInfoTable = pgTable("company_info", {
   // Planning document Section 5.5: "Company Name"
   companyName: text("company_name").notNull(),
 
-  // Planning document Section 5.5: "Company Logo"
-  // TODO: Planning document defines that a logo will be uploaded and used on all prints/PDFs,
-  // but does NOT define how it should be stored (file path / URL / base64 / binary blob).
-  // Storage mechanism will be implemented after the complete database architecture is finalized.
-  companyLogo: text("company_logo"),
+  // TODO: Company Logo storage mechanism will be implemented after architecture approval.
 
   // Planning document Section 5.5: "Address"
   address: text("address"),
