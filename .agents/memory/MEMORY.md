@@ -1,1 +1,2 @@
 - [Module Entry Rule](module-entry-rule.md) — Software open hote hi sirf 2 cards: Stock Module + ERP Module. Baqi sab andar planning doc ke mutabiq.
+- [Interface Design Reference](interface-design-reference.md) — PDF se liye gaye dark-theme register/form designs. UI phase mein in ko base banao.
