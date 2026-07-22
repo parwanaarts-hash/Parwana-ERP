@@ -1,0 +1,138 @@
+Excellent.
+
+Now we will start Phase 1.
+
+Phase 1 is Database Architecture Planning.
+
+IMPORTANT
+
+Do NOT write any code.
+
+Do NOT create schema files.
+
+Do NOT generate SQL.
+
+Do NOT create Drizzle models.
+
+Do NOT create migrations.
+
+Do NOT create APIs.
+
+Do NOT create UI.
+
+This is still a planning phase.
+
+====================================================
+
+YOUR TASK
+
+Using ONLY the uploaded planning document.
+
+Prepare the complete database architecture.
+
+====================================================
+
+You must identify:
+
+1.
+
+Every Master Table
+
+For each master table explain:
+
+- Purpose
+- Used by which module
+- Used by which screens
+
+----------------------------------------------------
+
+2.
+
+Every Transaction Table
+
+For each transaction table explain:
+
+- Purpose
+- Parent tables
+- Child tables
+- Which module owns it
+
+----------------------------------------------------
+
+3.
+
+Relationships
+
+Explain every relationship.
+
+Examples
+
+Company → Warehouse
+
+Warehouse → Purchase
+
+Party → Sales Bill
+
+Product → Product Ledger
+
+Gate Pass → Sales Bill
+
+etc.
+
+Only if they exist in the planning document.
+
+----------------------------------------------------
+
+4.
+
+Dependency Order
+
+Explain exactly
+
+Which tables must be created first.
+
+Which tables depend on previous tables.
+
+Build the exact implementation order.
+
+----------------------------------------------------
+
+5.
+
+Business Logic Mapping
+
+Map every table with the business process.
+
+Do NOT invent.
+
+Use only the planning document.
+
+----------------------------------------------------
+
+6.
+
+Review
+
+At the end,
+
+verify that no master, transaction or relationship from the planning document has been missed.
+
+====================================================
+
+IMPORTANT
+
+Return only the database planning.
+
+No code.
+
+No SQL.
+
+No schema.
+
+No implementation.
+
+After finishing,
+
+STOP
+
+and wait for my approval.
