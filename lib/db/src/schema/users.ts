@@ -1,13 +1,32 @@
-import { pgTable, serial, text, jsonb, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),
+
+  // Planning document Section 4.7: "Har User ka apna Username hoga"
   username: text("username").notNull().unique(),
+
+  // Planning document Section 4.7: "Tamam Passwords securely store kiye jayenge"
+  // Password hashed form mein store hoga — plain text nahi
   password: text("password").notNull(),
-  role: text("role", { enum: ["admin", "staff"] }).notNull().default("staff"),
-  permissions: jsonb("permissions").default({}).notNull(),
+
+  // Planning document Section 4.7: "Software mein alag alag User Roles assign kiye ja sakenge.
+  // Example: Admin, Staff."
+  // TODO: Planning document role ka storage format (enum / separate roles table / plain text)
+  // explicitly define nahi karta. Implementation format approval ke baad finalize hoga.
+  role: text("role").notNull(),
+
+  // Planning document Section 4.7: "Admin decide karega ke kis User ko kis Module ya Feature
+  // ka access dena hai. Example: Stock Module Access, ERP Module Access, Masters Access,
+  // Reports Access, History Access."
+  // TODO: Planning document permissions ka storage format (jsonb / boolean flags / separate
+  // permissions table) explicitly define nahi karta. Implementation format approval ke baad
+  // finalize hoga.
+  permissions: text("permissions").notNull(),
+
+  // Planning document Section 5.4: Har transaction ke sath Date aur Time automatically save hogi
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
