@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -19,17 +19,11 @@ export const productsTable = pgTable("products", {
   // stored as plain text. Storage format will be finalized after architecture approval.
   type: text("type").notNull(),
 
-  // Planning document Section 2.1 Dependencies: "categories (sub_category must exist)"
-  // Product create karte waqt Sub Category select karna lazmi hai.
-  // TODO: Foreign key constraint to categories table will be added after the categories
-  // table is created and its architecture is finalized and approved.
-  subCategoryId: integer("sub_category_id").notNull(),
+  // TODO: sub_category_id field will be added after the Categories table is created
+  // and its complete database relationship is finalized and approved.
 
-  // Planning document Section 2.1 Dependencies: "shikanja (shikanja must exist)"
-  // Product create karte waqt Shikanja select karna lazmi hai.
-  // TODO: Foreign key constraint to shikanja table will be added after the shikanja
-  // table is created and its architecture is finalized and approved.
-  shikanjaId: integer("shikanja_id").notNull(),
+  // TODO: shikanja_id field will be added after the Shikanja table is created
+  // and its complete database relationship is finalized and approved.
 
   // Planning document Section 5.4: Har record ke sath Date aur Time automatically save hogi
   createdAt: timestamp("created_at").defaultNow().notNull(),
