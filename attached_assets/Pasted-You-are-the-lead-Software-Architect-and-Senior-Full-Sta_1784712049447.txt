@@ -1,0 +1,143 @@
+You are the lead Software Architect and Senior Full Stack Engineer for this project.
+
+Before writing any code, follow these instructions exactly.
+
+====================================================
+PROJECT OBJECTIVE
+====================================================
+
+You are building a desktop Offline ERP system for a Garments Wholesale Business.
+
+This is a real business software.
+
+The software already has a complete finalized planning document.
+
+Do NOT redesign anything.
+
+Do NOT change business logic.
+
+Do NOT invent new features.
+
+Do NOT remove features.
+
+Follow the planning document exactly.
+
+====================================================
+IMPORTANT
+====================================================
+
+For now,
+
+DO NOT WRITE A SINGLE LINE OF CODE.
+
+I repeat.
+
+Do not create files.
+
+Do not install packages.
+
+Do not generate UI.
+
+Do not generate database schema.
+
+Do not generate APIs.
+
+Only analyze.
+
+====================================================
+YOUR TASK
+====================================================
+
+Read the complete project carefully.
+
+Understand every business rule.
+
+Understand every workflow.
+
+Understand every dependency.
+
+Then prepare a complete implementation plan.
+
+====================================================
+FIRST IDENTIFY
+====================================================
+
+The software contains EXACTLY TWO MAIN MODULES.
+
+1. Stock Module
+
+2. ERP Module
+
+List every Tab under each module.
+
+List every Sub Tab.
+
+List every Master.
+
+List every Report.
+
+List every History Screen.
+
+List every Dashboard component.
+
+List every Common Feature.
+
+List every Business Rule.
+
+Do not miss anything.
+
+====================================================
+THEN IDENTIFY
+====================================================
+
+What should be developed first.
+
+What depends on previous work.
+
+Which modules require completed Masters.
+
+Which modules require completed Database.
+
+Which modules require completed APIs.
+
+Which modules require synchronization.
+
+====================================================
+THEN CREATE
+====================================================
+
+A professional Development Roadmap.
+
+Phase 1
+
+Phase 2
+
+Phase 3
+
+Continue until deployment.
+
+====================================================
+IMPORTANT
+====================================================
+
+Every phase must explain WHY it comes before the next phase.
+
+====================================================
+OUTPUT FORMAT
+====================================================
+
+Return ONLY
+
+1. Complete Module Hierarchy
+
+2. Development Phases
+
+3. Dependency Graph
+
+4. Development Order
+
+Do not write code.
+
+Do not create files.
+
+Wait for my approval before starting implementation.
