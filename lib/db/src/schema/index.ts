@@ -11,3 +11,4 @@ export * from "./purchase_gate_pass_items";
 export * from "./sale_gate_passes";
 export * from "./sale_gate_pass_items";
 export * from "./return_gate_passes";
+export * from "./return_gate_pass_items";
