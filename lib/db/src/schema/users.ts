@@ -18,13 +18,11 @@ export const usersTable = pgTable("users", {
   // explicitly define nahi karta. Implementation format approval ke baad finalize hoga.
   role: text("role").notNull(),
 
-  // Planning document Section 4.7: "Admin decide karega ke kis User ko kis Module ya Feature
-  // ka access dena hai. Example: Stock Module Access, ERP Module Access, Masters Access,
-  // Reports Access, History Access."
-  // TODO: Planning document permissions ka storage format (jsonb / boolean flags / separate
-  // permissions table) explicitly define nahi karta. Implementation format approval ke baad
-  // finalize hoga.
-  permissions: text("permissions").notNull(),
+  // TODO: Permissions storage mechanism will be implemented after the complete database
+  // architecture is finalized and approved.
+  // Planning document Section 4.7 defines the concept of permissions (Stock Module Access,
+  // ERP Module Access, Masters Access, Reports Access, History Access) but does NOT define
+  // how they should be stored. No implementation added until storage format is approved.
 
   // Planning document Section 5.4: Har transaction ke sath Date aur Time automatically save hogi
   createdAt: timestamp("created_at").defaultNow().notNull(),
