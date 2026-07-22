@@ -8,3 +8,4 @@ export * from "./purchase_parties";
 export * from "./sale_parties";
 export * from "./purchase_gate_passes";
 export * from "./purchase_gate_pass_items";
+export * from "./sale_gate_passes";
