@@ -1,4 +1,4 @@
-import { pgTable, serial, text, date, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -8,12 +8,16 @@ export const purchaseGatePassesTable = pgTable("purchase_gate_passes", {
   // Planning document Section 2.2: "Har Purchase Gate Pass ka apna unique serial number hoga."
   // Example: PGP0001, PGP0002, PGP0003
   // Stored as text to hold the full formatted serial (prefix + number).
+  // TODO: Planning document does NOT explicitly define a unique constraint on gp_number.
+  // Constraint will be finalized after architecture approval.
   // TODO: Auto-generation logic (reading from number_series, assigning next number, updating
   // counter) is business logic — will be implemented after architecture is finalized.
-  gpNumber: text("gp_number").notNull().unique(),
+  gpNumber: text("gp_number").notNull(),
 
   // Planning document Section 2.2 Main Fields: "Date"
-  date: date("date").notNull(),
+  // TODO: Planning document does NOT define the storage datatype for Date (date vs timestamp).
+  // Datatype will be finalized after architecture approval.
+  date: text("date").notNull(),
 
   // Planning document Section 2.2 Main Fields: "Purchase Party"
   // TODO: purchase_party_id foreign key will be added after the complete database
