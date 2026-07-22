@@ -23,13 +23,12 @@ export const paymentReceivesTable = pgTable("payment_receives", {
   // TODO: sale_party_id foreign key to sale_parties table will be added after the complete
   // database relationship architecture is finalized and approved.
 
-  // Planning document Section 3.6 Main Fields: "Cash Received"
-  // TODO: Planning document does NOT define the datatype for Cash Received
-  // (numeric precision/scale not specified). Datatype will be finalized after
-  // architecture approval.
+  // Planning document Section 3.6 Main Fields: "Payment Mode (Cash/Bank)"
+  // TODO: Planning document does NOT define the storage format for Payment Mode
+  // (enum, plain text, or boolean). Storage format will be finalized after architecture approval.
 
-  // Planning document Section 3.6 Main Fields: "Bank Received"
-  // TODO: Planning document does NOT define the datatype for Bank Received
+  // Planning document Section 3.6 Main Fields: "Amount"
+  // TODO: Planning document does NOT define the datatype for Amount
   // (numeric precision/scale not specified). Datatype will be finalized after
   // architecture approval.
 
