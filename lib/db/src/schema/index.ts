@@ -6,3 +6,4 @@ export * from "./categories";
 export * from "./shikanja";
 export * from "./purchase_parties";
 export * from "./sale_parties";
+export * from "./purchase_gate_passes";
