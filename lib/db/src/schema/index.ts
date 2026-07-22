@@ -20,3 +20,4 @@ export * from "./return_bills";
 export * from "./return_bill_items";
 export * from "./payment_receives";
 export * from "./payment_paids";
+export * from "./ledger_entries";
