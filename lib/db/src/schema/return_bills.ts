@@ -39,10 +39,9 @@ export const returnBillsTable = pgTable("return_bills", {
 
   // Planning document Section 3.5 Main Fields: "Product Details (Auto Load)"
   // "Return GP Number enter karte hi software automatically tamam Items load kar dega."
-  // TODO: Product detail line items require a child table (return_bill_items).
-  // Child table will be implemented after the complete database architecture —
-  // including product relationships, quantity datatypes, and amount fields —
-  // is finalized and approved.
+  // The child table return_bill_items already exists. Pending architecture decisions
+  // within that table (product_id FK, quantity datatype, amount fields) will be
+  // finalized after the complete database architecture is approved.
 
   // TODO: Ledger update logic — "Return Bill Save hote hi Customer ka Ledger automatically
   // update ho jayega." — is business logic and will be implemented after the Ledger table

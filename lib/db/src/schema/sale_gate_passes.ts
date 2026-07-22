@@ -27,10 +27,9 @@ export const saleGatePassesTable = pgTable("sale_gate_passes", {
   remarks: text("remarks"),
 
   // Planning document Section 2.3 Main Fields: "Product", "Quantity"
-  // TODO: A Sale Gate Pass contains multiple product line items (Product, Quantity per
-  // product). This requires a child/detail table (sale_gate_pass_items). Child table will
-  // be implemented after the complete database architecture — including product relationships
-  // and quantity datatypes — is finalized and approved.
+  // The child table sale_gate_pass_items already exists. Pending architecture decisions
+  // within that table (product_id FK, quantity datatype) will be finalized after the
+  // complete database architecture is approved.
 
   // TODO: Stock update logic — "Jese hi Sale Gate Pass Save hoga, software warehouse ke
   // Stock se utni Quantity automatically minus kar dega." — is business logic and will be

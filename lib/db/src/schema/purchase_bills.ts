@@ -49,10 +49,9 @@ export const purchaseBillsTable = pgTable("purchase_bills", {
   // Planning document Section 3.3 Main Fields: "Product Details (Auto Load)"
   // "Gate Pass select karte hi software automatically Product Name, Quantity,
   // Lot Number load kar dega."
-  // TODO: Product detail line items require a child table (purchase_bill_items).
-  // Child table will be implemented after the complete database architecture —
-  // including product relationships, quantity datatypes, and rate fields — is
-  // finalized and approved.
+  // The child table purchase_bill_items already exists. Pending architecture decisions
+  // within that table (product_id FK, quantity datatype, amount fields) will be
+  // finalized after the complete database architecture is approved.
 
   // TODO: Ledger update logic — "Purchase Bill Save hote hi Purchase Party ke Ledger
   // mein Purchase Amount automatically update ho jayegi." — is business logic and will

@@ -5,10 +5,10 @@ import { z } from "zod/v4";
 export const paymentPaidsTable = pgTable("payment_paids", {
   id: serial("id").primaryKey(),
 
-  // Planning document Section 3.7: "Har Payment Paid ka apna unique serial number hoga."
-  // Example: PP0001, PP0002, PP0003
+  // Planning document Section 3.7 Main Fields: "Voucher No"
+  // Example format: PP0001, PP0002, PP0003 (based on number_series prefix system).
   // Stored as text to hold the full formatted serial (prefix + number).
-  // TODO: Planning document does NOT explicitly define a unique constraint on pp_number.
+  // TODO: Planning document does NOT explicitly define a unique constraint on this field.
   // Constraint will be finalized after architecture approval.
   // TODO: Auto-generation logic (reading from number_series, assigning next number,
   // updating counter) is business logic — will be implemented after architecture is finalized.

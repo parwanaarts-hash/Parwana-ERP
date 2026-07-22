@@ -5,10 +5,10 @@ import { z } from "zod/v4";
 export const paymentReceivesTable = pgTable("payment_receives", {
   id: serial("id").primaryKey(),
 
-  // Planning document Section 3.6: "Har Payment Receive ka apna unique serial number hoga."
-  // Example: PR0001, PR0002, PR0003
+  // Planning document Section 3.6 Main Fields: "Receipt No"
+  // Example format: PR0001, PR0002, PR0003 (based on number_series prefix system).
   // Stored as text to hold the full formatted serial (prefix + number).
-  // TODO: Planning document does NOT explicitly define a unique constraint on pr_number.
+  // TODO: Planning document does NOT explicitly define a unique constraint on this field.
   // Constraint will be finalized after architecture approval.
   // TODO: Auto-generation logic (reading from number_series, assigning next number,
   // updating counter) is business logic — will be implemented after architecture is finalized.

@@ -28,10 +28,9 @@ export const returnGatePassesTable = pgTable("return_gate_passes", {
 
   // Planning document Section 2.4 Main Fields: "Product", "Quantity", "Fresh", "B Mall"
   // "Har Product ke samne 2 Check Boxes honge — Fresh / B Mall"
-  // TODO: A Return Gate Pass contains multiple product line items (Product, Quantity,
-  // Fresh/B Mall per product). This requires a child/detail table (return_gate_pass_items).
-  // Child table will be implemented after the complete database architecture — including
-  // product relationships, quantity datatypes, and return type logic — is finalized and approved.
+  // The child table return_gate_pass_items already exists. Pending architecture decisions
+  // within that table (product_id FK, quantity datatype, Fresh/B Mall storage format)
+  // will be finalized after the complete database architecture is approved.
 
   // TODO: Stock update logic — "Sirf Fresh Return Stock mein add hoga. B Mall kabhi bhi
   // Stock increase nahi karega." — is business logic and will be implemented after

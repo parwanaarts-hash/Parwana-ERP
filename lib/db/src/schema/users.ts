@@ -14,8 +14,11 @@ export const usersTable = pgTable("users", {
 
   // Planning document Section 4.7: "Software mein alag alag User Roles assign kiye ja sakenge.
   // Example: Admin, Staff."
-  // TODO: Planning document role ka storage format (enum / separate roles table / plain text)
-  // explicitly define nahi karta. Implementation format approval ke baad finalize hoga.
+  // Currently stored as plain text (neutral placeholder — same approach as other fields
+  // pending architecture finalization).
+  // TODO: Planning document does NOT define the storage format for role
+  // (enum / separate roles table / plain text). Final format will be decided during
+  // architecture review and this field updated accordingly.
   role: text("role").notNull(),
 
   // TODO: Permissions implementation is pending until the complete database architecture is finalized.

@@ -17,10 +17,10 @@ export const purchaseBillItemsTable = pgTable("purchase_bill_items", {
   // (integer vs decimal — needed for Guz measurements). Datatype will be finalized
   // after architecture approval.
 
-  // Planning document Section 3.3: Bill items will carry rate and amount information.
-  // TODO: Planning document does NOT define the datatype for Rate or Bill Amount
-  // (numeric precision/scale not specified). Datatypes will be finalized after
-  // architecture approval.
+  // Planning document Section 3.3 Main Fields: "Bill Amount" is defined at the header level.
+  // TODO: Planning document does NOT explicitly define rate or amount fields at the item
+  // level. Whether item-level rate or amount columns are required will be determined
+  // after the complete database architecture is approved.
 
   // TODO: Ledger update logic — "Purchase Bill Save hote hi Purchase Party ke Ledger
   // mein Purchase Amount automatically update ho jayegi." — is business logic and will

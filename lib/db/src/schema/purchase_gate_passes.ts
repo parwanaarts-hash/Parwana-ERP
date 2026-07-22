@@ -32,11 +32,9 @@ export const purchaseGatePassesTable = pgTable("purchase_gate_passes", {
 
   // Planning document Section 2.2 Main Fields: "Product", "Quantity", "Gate Pass Quantity",
   // "Received Quantity", "Pending Quantity"
-  // TODO: A Purchase Gate Pass contains multiple product line items (Product, Gate Pass
-  // Quantity, Received Quantity, Pending Quantity per product). This requires a child/detail
-  // table (e.g. purchase_gate_pass_items). Child table will be implemented after the complete
-  // database architecture — including product relationships and quantity datatypes — is
-  // finalized and approved.
+  // The child table purchase_gate_pass_items already exists. Pending architecture decisions
+  // within that table (product_id FK, quantity datatype, pending quantity stored vs computed)
+  // will be finalized after the complete database architecture is approved.
 
   // TODO: Pending Quantity is explicitly defined as auto-calculated by software:
   // "Software automatically Pending Quantity calculate karega (Gate Pass Qty - Received Qty)."
