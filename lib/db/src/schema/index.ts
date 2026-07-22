@@ -5,3 +5,4 @@ export * from "./products";
 export * from "./categories";
 export * from "./shikanja";
 export * from "./purchase_parties";
+export * from "./sale_parties";
