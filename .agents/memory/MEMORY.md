@@ -1,0 +1,1 @@
+- [Module Entry Rule](module-entry-rule.md) — Software open hote hi sirf 2 cards: Stock Module + ERP Module. Baqi sab andar planning doc ke mutabiq.
