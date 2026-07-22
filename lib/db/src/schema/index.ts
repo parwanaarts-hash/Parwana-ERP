@@ -4,3 +4,4 @@ export * from "./number_series";
 export * from "./products";
 export * from "./categories";
 export * from "./shikanja";
+export * from "./purchase_parties";
