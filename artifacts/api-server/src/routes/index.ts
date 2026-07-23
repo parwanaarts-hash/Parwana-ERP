@@ -10,6 +10,7 @@ import returnGatePassesRouter from "./returnGatePasses";
 import returnBillsRouter from "./returnBills";
 import reportsRouter from "./reports";
 import stockReportsRouter from "./stockReports";
+import dashboardRouter from "./dashboard";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use("/return-gate-passes", returnGatePassesRouter);
 router.use("/return-bills", returnBillsRouter);
 router.use("/reports", reportsRouter);
 router.use("/stock-reports", stockReportsRouter);
+router.use("/dashboard", dashboardRouter);
 
 export default router;
