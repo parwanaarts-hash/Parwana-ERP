@@ -62,6 +62,15 @@ import {
   PaymentReceiveValidationError,
 } from "../services/paymentReceiveService";
 
+// Service errors — Return Gate Pass
+import {
+  ReturnGatePassNotFoundError,
+  ReturnGatePassLinkedToBillError,
+  ReturnGatePassPartyNotFoundError,
+  ReturnGatePassProductNotFoundError,
+  ReturnGatePassValidationError,
+} from "../services/returnGatePassService";
+
 // Service errors — Number Series
 import { NumberSeriesNotFoundError } from "../services/numberSeriesService";
 
@@ -145,7 +154,11 @@ export function errorHandler(
     err instanceof SalesBillGatePassNotFoundError ||
     err instanceof SalesBillGatePassPartyMismatchError ||
     err instanceof PaymentReceiveNotFoundError ||
-    err instanceof PaymentReceivePartyNotFoundError
+    err instanceof PaymentReceivePartyNotFoundError ||
+    err instanceof ReturnGatePassNotFoundError ||
+    err instanceof ReturnGatePassLinkedToBillError ||
+    err instanceof ReturnGatePassPartyNotFoundError ||
+    err instanceof ReturnGatePassProductNotFoundError
   ) {
     sendError(res, 404, err.message, err.name);
     return;
@@ -158,7 +171,8 @@ export function errorHandler(
     err instanceof PaymentPaidValidationError ||
     err instanceof SaleGatePassValidationError ||
     err instanceof SalesBillValidationError ||
-    err instanceof PaymentReceiveValidationError
+    err instanceof PaymentReceiveValidationError ||
+    err instanceof ReturnGatePassValidationError
   ) {
     sendError(res, 400, err.message, err.name);
     return;
