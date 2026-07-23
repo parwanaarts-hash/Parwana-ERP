@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Textile ERP"
+version = "1.0.0"
+id = "artifacts/textile-erp"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24628
+
+[services.development]
+run = "pnpm --filter @workspace/textile-erp run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/textile-erp", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/textile-erp/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24628"
+BASE_PATH = "/"

@@ -1,22 +1,37 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Textile ERP API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: dashboard
+  - name: purchaseGatePasses
+  - name: purchaseBills
+  - name: paymentPaids
+  - name: saleGatePasses
+  - name: salesBills
+  - name: paymentReceives
+  - name: returnGatePasses
+  - name: returnBills
+  - name: reports
+  - name: stockReports
+  - name: purchaseParties
+  - name: saleParties
+  - name: shikanja
+  - name: categories
+  - name: products
+
 paths:
+  # ── Health ──────────────────────────────────────────────────────────────────
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +39,2659 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── Dashboard ────────────────────────────────────────────────────────────────
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Overall dashboard summary
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/today:
+    get:
+      operationId: getDashboardToday
+      tags: [dashboard]
+      summary: Today's transaction counts
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodaySummary"
+
+  /dashboard/outstanding:
+    get:
+      operationId: getDashboardOutstanding
+      tags: [dashboard]
+      summary: Outstanding balances per party
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutstandingSummary"
+
+  /dashboard/recent-transactions:
+    get:
+      operationId: getDashboardRecentTransactions
+      tags: [dashboard]
+      summary: Recent transactions
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecentTransactionList"
+
+  /dashboard/low-stock:
+    get:
+      operationId: getDashboardLowStock
+      tags: [dashboard]
+      summary: Low stock products
+      parameters:
+        - name: threshold
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LowStockList"
+
+  # ── Purchase Gate Passes ─────────────────────────────────────────────────────
+  /purchase-gate-passes:
+    get:
+      operationId: listPurchaseGatePasses
+      tags: [purchaseGatePasses]
+      summary: List purchase gate passes
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: purchasePartyId
+          in: query
+          schema:
+            type: integer
+        - name: unlinkedOnly
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseGatePassList"
+    post:
+      operationId: createPurchaseGatePass
+      tags: [purchaseGatePasses]
+      summary: Create purchase gate pass
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PurchaseGatePassInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseGatePass"
+
+  /purchase-gate-passes/{id}:
+    get:
+      operationId: getPurchaseGatePass
+      tags: [purchaseGatePasses]
+      summary: Get purchase gate pass by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseGatePass"
+    put:
+      operationId: updatePurchaseGatePass
+      tags: [purchaseGatePasses]
+      summary: Update purchase gate pass
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PurchaseGatePassInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseGatePass"
+    delete:
+      operationId: deletePurchaseGatePass
+      tags: [purchaseGatePasses]
+      summary: Delete purchase gate pass
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Deleted
+
+  /purchase-gate-passes/number/{docNumber}:
+    get:
+      operationId: getPurchaseGatePassByNumber
+      tags: [purchaseGatePasses]
+      summary: Get by document number
+      parameters:
+        - $ref: "#/components/parameters/docNumber"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseGatePass"
+
+  # ── Purchase Bills ───────────────────────────────────────────────────────────
+  /purchase-bills:
+    get:
+      operationId: listPurchaseBills
+      tags: [purchaseBills]
+      summary: List purchase bills
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: purchasePartyId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseBillList"
+    post:
+      operationId: createPurchaseBill
+      tags: [purchaseBills]
+      summary: Create purchase bill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PurchaseBillInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseBill"
+
+  /purchase-bills/{id}:
+    get:
+      operationId: getPurchaseBill
+      tags: [purchaseBills]
+      summary: Get purchase bill by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseBill"
+    put:
+      operationId: updatePurchaseBill
+      tags: [purchaseBills]
+      summary: Update purchase bill
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PurchaseBillInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseBill"
+    delete:
+      operationId: deletePurchaseBill
+      tags: [purchaseBills]
+      summary: Delete purchase bill
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Deleted
+
+  /purchase-bills/number/{docNumber}:
+    get:
+      operationId: getPurchaseBillByNumber
+      tags: [purchaseBills]
+      summary: Get by document number
+      parameters:
+        - $ref: "#/components/parameters/docNumber"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseBill"
+
+  # ── Payment Paids ────────────────────────────────────────────────────────────
+  /payment-paids:
+    get:
+      operationId: listPaymentPaids
+      tags: [paymentPaids]
+      summary: List payments paid
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: purchasePartyId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentPaidList"
+    post:
+      operationId: createPaymentPaid
+      tags: [paymentPaids]
+      summary: Create payment paid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentPaidInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentPaid"
+
+  /payment-paids/{id}:
+    get:
+      operationId: getPaymentPaid
+      tags: [paymentPaids]
+      summary: Get payment paid by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentPaid"
+    put:
+      operationId: updatePaymentPaid
+      tags: [paymentPaids]
+      summary: Update payment paid
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentPaidInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentPaid"
+    delete:
+      operationId: deletePaymentPaid
+      tags: [paymentPaids]
+      summary: Delete payment paid
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Deleted
+
+  /payment-paids/number/{docNumber}:
+    get:
+      operationId: getPaymentPaidByNumber
+      tags: [paymentPaids]
+      summary: Get by document number
+      parameters:
+        - $ref: "#/components/parameters/docNumber"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentPaid"
+
+  # ── Sale Gate Passes ─────────────────────────────────────────────────────────
+  /sale-gate-passes:
+    get:
+      operationId: listSaleGatePasses
+      tags: [saleGatePasses]
+      summary: List sale gate passes
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: salePartyId
+          in: query
+          schema:
+            type: integer
+        - name: unlinkedOnly
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SaleGatePassList"
+    post:
+      operationId: createSaleGatePass
+      tags: [saleGatePasses]
+      summary: Create sale gate pass
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaleGatePassInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SaleGatePass"
+
+  /sale-gate-passes/{id}:
+    get:
+      operationId: getSaleGatePass
+      tags: [saleGatePasses]
+      summary: Get sale gate pass by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SaleGatePass"
+    put:
+      operationId: updateSaleGatePass
+      tags: [saleGatePasses]
+      summary: Update sale gate pass
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaleGatePassInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SaleGatePass"
+    delete:
+      operationId: deleteSaleGatePass
+      tags: [saleGatePasses]
+      summary: Delete sale gate pass
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Deleted
+
+  /sale-gate-passes/number/{docNumber}:
+    get:
+      operationId: getSaleGatePassByNumber
+      tags: [saleGatePasses]
+      summary: Get by document number
+      parameters:
+        - $ref: "#/components/parameters/docNumber"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SaleGatePass"
+
+  # ── Sales Bills ──────────────────────────────────────────────────────────────
+  /sales-bills:
+    get:
+      operationId: listSalesBills
+      tags: [salesBills]
+      summary: List sales bills
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: salePartyId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SalesBillList"
+    post:
+      operationId: createSalesBill
+      tags: [salesBills]
+      summary: Create sales bill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SalesBillInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SalesBill"
+
+  /sales-bills/{id}:
+    get:
+      operationId: getSalesBill
+      tags: [salesBills]
+      summary: Get sales bill by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SalesBill"
+    put:
+      operationId: updateSalesBill
+      tags: [salesBills]
+      summary: Update sales bill
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SalesBillInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SalesBill"
+    delete:
+      operationId: deleteSalesBill
+      tags: [salesBills]
+      summary: Delete sales bill
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Deleted
+
+  /sales-bills/number/{docNumber}:
+    get:
+      operationId: getSalesBillByNumber
+      tags: [salesBills]
+      summary: Get by document number
+      parameters:
+        - $ref: "#/components/parameters/docNumber"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SalesBill"
+
+  # ── Payment Receives ─────────────────────────────────────────────────────────
+  /payment-receives:
+    get:
+      operationId: listPaymentReceives
+      tags: [paymentReceives]
+      summary: List payment receives
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: salePartyId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentReceiveList"
+    post:
+      operationId: createPaymentReceive
+      tags: [paymentReceives]
+      summary: Create payment receive
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentReceiveInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentReceive"
+
+  /payment-receives/{id}:
+    get:
+      operationId: getPaymentReceive
+      tags: [paymentReceives]
+      summary: Get payment receive by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentReceive"
+    put:
+      operationId: updatePaymentReceive
+      tags: [paymentReceives]
+      summary: Update payment receive
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentReceiveInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentReceive"
+    delete:
+      operationId: deletePaymentReceive
+      tags: [paymentReceives]
+      summary: Delete payment receive
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Deleted
+
+  /payment-receives/number/{docNumber}:
+    get:
+      operationId: getPaymentReceiveByNumber
+      tags: [paymentReceives]
+      summary: Get by document number
+      parameters:
+        - $ref: "#/components/parameters/docNumber"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentReceive"
+
+  # ── Return Gate Passes ───────────────────────────────────────────────────────
+  /return-gate-passes:
+    get:
+      operationId: listReturnGatePasses
+      tags: [returnGatePasses]
+      summary: List return gate passes
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: salePartyId
+          in: query
+          schema:
+            type: integer
+        - name: unlinkedOnly
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReturnGatePassList"
+    post:
+      operationId: createReturnGatePass
+      tags: [returnGatePasses]
+      summary: Create return gate pass
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReturnGatePassInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReturnGatePass"
+
+  /return-gate-passes/{id}:
+    get:
+      operationId: getReturnGatePass
+      tags: [returnGatePasses]
+      summary: Get return gate pass by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReturnGatePass"
+    put:
+      operationId: updateReturnGatePass
+      tags: [returnGatePasses]
+      summary: Update return gate pass
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReturnGatePassInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReturnGatePass"
+    delete:
+      operationId: deleteReturnGatePass
+      tags: [returnGatePasses]
+      summary: Delete return gate pass
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Deleted
+
+  /return-gate-passes/number/{docNumber}:
+    get:
+      operationId: getReturnGatePassByNumber
+      tags: [returnGatePasses]
+      summary: Get by document number
+      parameters:
+        - $ref: "#/components/parameters/docNumber"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReturnGatePass"
+
+  # ── Return Bills ─────────────────────────────────────────────────────────────
+  /return-bills:
+    get:
+      operationId: listReturnBills
+      tags: [returnBills]
+      summary: List return bills
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: salePartyId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReturnBillList"
+    post:
+      operationId: createReturnBill
+      tags: [returnBills]
+      summary: Create return bill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReturnBillInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReturnBill"
+
+  /return-bills/{id}:
+    get:
+      operationId: getReturnBill
+      tags: [returnBills]
+      summary: Get return bill by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReturnBill"
+    put:
+      operationId: updateReturnBill
+      tags: [returnBills]
+      summary: Update return bill
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReturnBillInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReturnBill"
+    delete:
+      operationId: deleteReturnBill
+      tags: [returnBills]
+      summary: Delete return bill
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Deleted
+
+  /return-bills/number/{docNumber}:
+    get:
+      operationId: getReturnBillByNumber
+      tags: [returnBills]
+      summary: Get by document number
+      parameters:
+        - $ref: "#/components/parameters/docNumber"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReturnBill"
+
+  # ── Reports ──────────────────────────────────────────────────────────────────
+  /reports/purchase-register:
+    get:
+      operationId: getPurchaseRegister
+      tags: [reports]
+      summary: Purchase register
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: purchasePartyId
+          in: query
+          schema:
+            type: integer
+        - name: docNumber
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterList"
+
+  /reports/sales-register:
+    get:
+      operationId: getSalesRegister
+      tags: [reports]
+      summary: Sales register
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: salePartyId
+          in: query
+          schema:
+            type: integer
+        - name: docNumber
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterList"
+
+  /reports/return-register:
+    get:
+      operationId: getReturnRegister
+      tags: [reports]
+      summary: Return register
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: salePartyId
+          in: query
+          schema:
+            type: integer
+        - name: docNumber
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterList"
+
+  /reports/payment-receive-register:
+    get:
+      operationId: getPaymentReceiveRegister
+      tags: [reports]
+      summary: Payment receive register
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: salePartyId
+          in: query
+          schema:
+            type: integer
+        - name: docNumber
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterList"
+
+  /reports/payment-paid-register:
+    get:
+      operationId: getPaymentPaidRegister
+      tags: [reports]
+      summary: Payment paid register
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: purchasePartyId
+          in: query
+          schema:
+            type: integer
+        - name: docNumber
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterList"
+
+  # ── Stock Reports ─────────────────────────────────────────────────────────────
+  /stock-reports/stock-list:
+    get:
+      operationId: getStockList
+      tags: [stockReports]
+      summary: Current stock list
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - name: productId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockList"
+
+  /stock-reports/product-ledger:
+    get:
+      operationId: getProductLedger
+      tags: [stockReports]
+      summary: Product stock movement ledger
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: productId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductLedgerList"
+
+  /stock-reports/purchase-gate-pass-register:
+    get:
+      operationId: getPurchaseGatePassRegister
+      tags: [stockReports]
+      summary: Purchase gate pass register
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: purchasePartyId
+          in: query
+          schema:
+            type: integer
+        - name: unlinkedOnly
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GatePassRegisterList"
+
+  /stock-reports/sale-gate-pass-register:
+    get:
+      operationId: getSaleGatePassRegister
+      tags: [stockReports]
+      summary: Sale gate pass register
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: salePartyId
+          in: query
+          schema:
+            type: integer
+        - name: unlinkedOnly
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GatePassRegisterList"
+
+  /stock-reports/return-gate-pass-register:
+    get:
+      operationId: getReturnGatePassRegister
+      tags: [stockReports]
+      summary: Return gate pass register
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/fromDate"
+        - $ref: "#/components/parameters/toDate"
+        - name: salePartyId
+          in: query
+          schema:
+            type: integer
+        - name: unlinkedOnly
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GatePassRegisterList"
+
+  # ── Purchase Parties ─────────────────────────────────────────────────────────
+  /purchase-parties:
+    get:
+      operationId: listPurchaseParties
+      tags: [purchaseParties]
+      summary: List purchase parties
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchasePartyList"
+    post:
+      operationId: createPurchaseParty
+      tags: [purchaseParties]
+      summary: Create purchase party
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PurchasePartyInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseParty"
+
+  /purchase-parties/{id}:
+    get:
+      operationId: getPurchaseParty
+      tags: [purchaseParties]
+      summary: Get purchase party by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseParty"
+    put:
+      operationId: updatePurchaseParty
+      tags: [purchaseParties]
+      summary: Update purchase party
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PurchasePartyInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseParty"
+    delete:
+      operationId: deletePurchaseParty
+      tags: [purchaseParties]
+      summary: Delete purchase party
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Sale Parties ─────────────────────────────────────────────────────────────
+  /sale-parties:
+    get:
+      operationId: listSaleParties
+      tags: [saleParties]
+      summary: List sale parties
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SalePartyList"
+    post:
+      operationId: createSaleParty
+      tags: [saleParties]
+      summary: Create sale party
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SalePartyInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SaleParty"
+
+  /sale-parties/{id}:
+    get:
+      operationId: getSaleParty
+      tags: [saleParties]
+      summary: Get sale party by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SaleParty"
+    put:
+      operationId: updateSaleParty
+      tags: [saleParties]
+      summary: Update sale party
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SalePartyInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SaleParty"
+    delete:
+      operationId: deleteSaleParty
+      tags: [saleParties]
+      summary: Delete sale party
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Shikanja ─────────────────────────────────────────────────────────────────
+  /shikanja:
+    get:
+      operationId: listShikanja
+      tags: [shikanja]
+      summary: List shikanja
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShikanjaList"
+    post:
+      operationId: createShikanja
+      tags: [shikanja]
+      summary: Create shikanja
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShikanjaInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shikanja"
+
+  /shikanja/{id}:
+    get:
+      operationId: getShikanja
+      tags: [shikanja]
+      summary: Get shikanja by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shikanja"
+    put:
+      operationId: updateShikanja
+      tags: [shikanja]
+      summary: Update shikanja
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShikanjaInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shikanja"
+    delete:
+      operationId: deleteShikanja
+      tags: [shikanja]
+      summary: Delete shikanja
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Categories ───────────────────────────────────────────────────────────────
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      summary: List categories
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: topLevelOnly
+          in: query
+          schema:
+            type: boolean
+        - name: parentId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryList"
+    post:
+      operationId: createCategory
+      tags: [categories]
+      summary: Create category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+
+  /categories/{id}:
+    get:
+      operationId: getCategory
+      tags: [categories]
+      summary: Get category by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+    put:
+      operationId: updateCategory
+      tags: [categories]
+      summary: Update category
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+    delete:
+      operationId: deleteCategory
+      tags: [categories]
+      summary: Delete category
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Products ─────────────────────────────────────────────────────────────────
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      summary: List products
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [Set, Than, Suit]
+        - name: subCategoryId
+          in: query
+          schema:
+            type: integer
+        - name: shikanjaId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductList"
+    post:
+      operationId: createProduct
+      tags: [products]
+      summary: Create product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /products/{id}:
+    get:
+      operationId: getProduct
+      tags: [products]
+      summary: Get product by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+    put:
+      operationId: updateProduct
+      tags: [products]
+      summary: Update product
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+    delete:
+      operationId: deleteProduct
+      tags: [products]
+      summary: Delete product
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Deleted
+
 components:
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    docNumber:
+      name: docNumber
+      in: path
+      required: true
+      schema:
+        type: string
+    limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+    offset:
+      name: offset
+      in: query
+      schema:
+        type: integer
+    fromDate:
+      name: fromDate
+      in: query
+      schema:
+        type: string
+    toDate:
+      name: toDate
+      in: query
+      schema:
+        type: string
+
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    # ── Master Data ─────────────────────────────────────────────────────────────
+    PurchaseParty:
+      type: object
+      required: [id, name, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        openingBalance:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    PurchasePartyInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        city:
+          type: string
+        address:
+          type: string
+        openingBalance:
+          type: string
+
+    PurchasePartyList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseParty"
+        total:
+          type: integer
+
+    SaleParty:
+      type: object
+      required: [id, name, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        creditLimit:
+          type: ["string", "null"]
+        openingBalance:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    SalePartyInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        city:
+          type: string
+        address:
+          type: string
+        creditLimit:
+          type: string
+        openingBalance:
+          type: string
+
+    SalePartyList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/SaleParty"
+        total:
+          type: integer
+
+    Shikanja:
+      type: object
+      required: [id, name, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ShikanjaInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+
+    ShikanjaList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/Shikanja"
+        total:
+          type: integer
+
+    Category:
+      type: object
+      required: [id, name, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        parentId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    CategoryInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        parentId:
+          type: ["integer", "null"]
+
+    CategoryList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/Category"
+        total:
+          type: integer
+
+    Product:
+      type: object
+      required: [id, itemCode, productName, type, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        itemCode:
+          type: string
+        productName:
+          type: string
+        type:
+          type: string
+          enum: [Set, Than, Suit]
+        subCategoryId:
+          type: ["integer", "null"]
+        shikanjaId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ProductInput:
+      type: object
+      required: [itemCode, productName, type]
+      properties:
+        itemCode:
+          type: string
+        productName:
+          type: string
+        type:
+          type: string
+          enum: [Set, Than, Suit]
+        subCategoryId:
+          type: ["integer", "null"]
+        shikanjaId:
+          type: ["integer", "null"]
+
+    ProductList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        total:
+          type: integer
+
+    # ── Purchase Gate Pass ──────────────────────────────────────────────────────
+    PurchaseGatePassItem:
+      type: object
+      required: [id, purchaseGatePassId, productId]
+      properties:
+        id:
+          type: integer
+        purchaseGatePassId:
+          type: integer
+        productId:
+          type: integer
+        qty:
+          type: ["string", "null"]
+        gazana:
+          type: ["string", "null"]
+        rate:
+          type: ["string", "null"]
+        receivedQty:
+          type: ["string", "null"]
+
+    PurchaseGatePassItemInput:
+      type: object
+      required: [productId]
+      properties:
+        productId:
+          type: integer
+        qty:
+          type: string
+        gazana:
+          type: string
+        rate:
+          type: string
+        receivedQty:
+          type: string
+
+    PurchaseGatePass:
+      type: object
+      required: [id, gpNumber, date, purchasePartyId, lotNumber, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        gpNumber:
+          type: string
+        date:
+          type: string
+        purchasePartyId:
+          type: integer
+        lotNumber:
+          type: string
+        remarks:
+          type: ["string", "null"]
+        purchaseBillId:
+          type: ["integer", "null"]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseGatePassItem"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    PurchaseGatePassInput:
+      type: object
+      required: [date, purchasePartyId, lotNumber, items]
+      properties:
+        date:
+          type: string
+        purchasePartyId:
+          type: integer
+        lotNumber:
+          type: string
+        remarks:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseGatePassItemInput"
+
+    PurchaseGatePassList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseGatePass"
+        total:
+          type: integer
+
+    # ── Purchase Bill ───────────────────────────────────────────────────────────
+    PurchaseBillItem:
+      type: object
+      required: [id, purchaseBillId, productId]
+      properties:
+        id:
+          type: integer
+        purchaseBillId:
+          type: integer
+        productId:
+          type: integer
+        qty:
+          type: ["string", "null"]
+        gazana:
+          type: ["string", "null"]
+        rate:
+          type: ["string", "null"]
+        amount:
+          type: ["string", "null"]
+
+    PurchaseBillItemInput:
+      type: object
+      required: [productId]
+      properties:
+        productId:
+          type: integer
+        qty:
+          type: string
+        gazana:
+          type: string
+        rate:
+          type: string
+        amount:
+          type: string
+
+    PurchaseBill:
+      type: object
+      required: [id, billNumber, billDate, purchasePartyId, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        billNumber:
+          type: string
+        billDate:
+          type: string
+        purchasePartyId:
+          type: integer
+        supplierBillNumber:
+          type: ["string", "null"]
+        lotNumber:
+          type: ["string", "null"]
+        billAmount:
+          type: ["string", "null"]
+        remarks:
+          type: ["string", "null"]
+        gatePassIds:
+          type: array
+          items:
+            type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseBillItem"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    PurchaseBillInput:
+      type: object
+      required: [billDate, purchasePartyId, gatePassIds]
+      properties:
+        billDate:
+          type: string
+        purchasePartyId:
+          type: integer
+        supplierBillNumber:
+          type: string
+        lotNumber:
+          type: string
+        billAmount:
+          type: string
+        remarks:
+          type: string
+        gatePassIds:
+          type: array
+          items:
+            type: integer
+
+    PurchaseBillList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseBill"
+        total:
+          type: integer
+
+    # ── Payment Paid ────────────────────────────────────────────────────────────
+    PaymentPaid:
+      type: object
+      required: [id, ppNumber, date, purchasePartyId, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        ppNumber:
+          type: string
+        date:
+          type: string
+        purchasePartyId:
+          type: integer
+        paymentMode:
+          type: ["string", "null"]
+        amount:
+          type: ["string", "null"]
+        remarks:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    PaymentPaidInput:
+      type: object
+      required: [date, purchasePartyId]
+      properties:
+        date:
+          type: string
+        purchasePartyId:
+          type: integer
+        paymentMode:
+          type: string
+          enum: [Cash, Bank]
+        amount:
+          type: string
+        remarks:
+          type: string
+
+    PaymentPaidList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentPaid"
+        total:
+          type: integer
+
+    # ── Sale Gate Pass ──────────────────────────────────────────────────────────
+    SaleGatePassItem:
+      type: object
+      required: [id, saleGatePassId, productId]
+      properties:
+        id:
+          type: integer
+        saleGatePassId:
+          type: integer
+        productId:
+          type: integer
+        qty:
+          type: ["string", "null"]
+        gazana:
+          type: ["string", "null"]
+        meter:
+          type: ["string", "null"]
+        rate:
+          type: ["string", "null"]
+        amount:
+          type: ["string", "null"]
+
+    SaleGatePassItemInput:
+      type: object
+      required: [productId]
+      properties:
+        productId:
+          type: integer
+        qty:
+          type: string
+        gazana:
+          type: string
+        meter:
+          type: string
+        rate:
+          type: string
+        amount:
+          type: string
+
+    SaleGatePass:
+      type: object
+      required: [id, gpNumber, date, salePartyId, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        gpNumber:
+          type: string
+        date:
+          type: string
+        salePartyId:
+          type: integer
+        remarks:
+          type: ["string", "null"]
+        salesBillId:
+          type: ["integer", "null"]
+        noOfBags:
+          type: ["integer", "null"]
+        shikanjaId:
+          type: ["integer", "null"]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SaleGatePassItem"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    SaleGatePassInput:
+      type: object
+      required: [date, salePartyId, items]
+      properties:
+        date:
+          type: string
+        salePartyId:
+          type: integer
+        remarks:
+          type: string
+        noOfBags:
+          type: integer
+        shikanjaId:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SaleGatePassItemInput"
+
+    SaleGatePassList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/SaleGatePass"
+        total:
+          type: integer
+
+    # ── Sales Bill ──────────────────────────────────────────────────────────────
+    SalesBillItem:
+      type: object
+      required: [id, salesBillId, productId]
+      properties:
+        id:
+          type: integer
+        salesBillId:
+          type: integer
+        productId:
+          type: integer
+        qty:
+          type: ["string", "null"]
+        gazana:
+          type: ["string", "null"]
+        rate:
+          type: ["string", "null"]
+        finalRate:
+          type: ["string", "null"]
+        total:
+          type: ["string", "null"]
+
+    SalesBillItemInput:
+      type: object
+      required: [productId]
+      properties:
+        productId:
+          type: integer
+        qty:
+          type: string
+        gazana:
+          type: string
+        rate:
+          type: string
+        finalRate:
+          type: string
+        total:
+          type: string
+
+    SalesBill:
+      type: object
+      required: [id, billNumber, billDate, salePartyId, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        billNumber:
+          type: string
+        billDate:
+          type: string
+        salePartyId:
+          type: integer
+        billType:
+          type: ["string", "null"]
+        cashPayment:
+          type: ["string", "null"]
+        bankPayment:
+          type: ["string", "null"]
+        remarks:
+          type: ["string", "null"]
+        gatePassIds:
+          type: array
+          items:
+            type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SalesBillItem"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    SalesBillInput:
+      type: object
+      required: [billDate, salePartyId, gatePassIds]
+      properties:
+        billDate:
+          type: string
+        salePartyId:
+          type: integer
+        billType:
+          type: string
+        cashPayment:
+          type: string
+        bankPayment:
+          type: string
+        remarks:
+          type: string
+        gatePassIds:
+          type: array
+          items:
+            type: integer
+
+    SalesBillList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/SalesBill"
+        total:
+          type: integer
+
+    # ── Payment Receive ─────────────────────────────────────────────────────────
+    PaymentReceive:
+      type: object
+      required: [id, prNumber, date, salePartyId, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        prNumber:
+          type: string
+        date:
+          type: string
+        salePartyId:
+          type: integer
+        paymentMode:
+          type: ["string", "null"]
+        amount:
+          type: ["string", "null"]
+        remarks:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    PaymentReceiveInput:
+      type: object
+      required: [date, salePartyId]
+      properties:
+        date:
+          type: string
+        salePartyId:
+          type: integer
+        paymentMode:
+          type: string
+          enum: [Cash, Bank]
+        amount:
+          type: string
+        remarks:
+          type: string
+
+    PaymentReceiveList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentReceive"
+        total:
+          type: integer
+
+    # ── Return Gate Pass ────────────────────────────────────────────────────────
+    ReturnGatePassItem:
+      type: object
+      required: [id, returnGatePassId, productId]
+      properties:
+        id:
+          type: integer
+        returnGatePassId:
+          type: integer
+        productId:
+          type: integer
+        returnType:
+          type: ["string", "null"]
+        qty:
+          type: ["string", "null"]
+        gazana:
+          type: ["string", "null"]
+        rate:
+          type: ["string", "null"]
+
+    ReturnGatePassItemInput:
+      type: object
+      required: [productId]
+      properties:
+        productId:
+          type: integer
+        returnType:
+          type: string
+          enum: [Fresh, BMall]
+        qty:
+          type: string
+        gazana:
+          type: string
+        rate:
+          type: string
+
+    ReturnGatePass:
+      type: object
+      required: [id, gpNumber, date, salePartyId, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        gpNumber:
+          type: string
+        date:
+          type: string
+        salePartyId:
+          type: integer
+        remarks:
+          type: ["string", "null"]
+        returnBillId:
+          type: ["integer", "null"]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReturnGatePassItem"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ReturnGatePassInput:
+      type: object
+      required: [date, salePartyId, items]
+      properties:
+        date:
+          type: string
+        salePartyId:
+          type: integer
+        remarks:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReturnGatePassItemInput"
+
+    ReturnGatePassList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReturnGatePass"
+        total:
+          type: integer
+
+    # ── Return Bill ─────────────────────────────────────────────────────────────
+    ReturnBillItem:
+      type: object
+      required: [id, returnBillId, productId]
+      properties:
+        id:
+          type: integer
+        returnBillId:
+          type: integer
+        productId:
+          type: integer
+        qty:
+          type: ["string", "null"]
+
+    ReturnBillItemInput:
+      type: object
+      required: [productId]
+      properties:
+        productId:
+          type: integer
+        qty:
+          type: string
+
+    ReturnBill:
+      type: object
+      required: [id, billNumber, billDate, salePartyId, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        billNumber:
+          type: string
+        billDate:
+          type: string
+        salePartyId:
+          type: integer
+        remarks:
+          type: ["string", "null"]
+        gatePassIds:
+          type: array
+          items:
+            type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReturnBillItem"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ReturnBillInput:
+      type: object
+      required: [billDate, salePartyId, gatePassIds]
+      properties:
+        billDate:
+          type: string
+        salePartyId:
+          type: integer
+        remarks:
+          type: string
+        gatePassIds:
+          type: array
+          items:
+            type: integer
+
+    ReturnBillList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReturnBill"
+        total:
+          type: integer
+
+    # ── Reports ─────────────────────────────────────────────────────────────────
+    RegisterRow:
+      type: object
+      properties:
+        id:
+          type: integer
+        docNumber:
+          type: string
+        date:
+          type: string
+        partyName:
+          type: ["string", "null"]
+        amount:
+          type: ["string", "null"]
+        remarks:
+          type: ["string", "null"]
+
+    RegisterList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/RegisterRow"
+        total:
+          type: integer
+
+    # ── Stock Reports ───────────────────────────────────────────────────────────
+    StockRow:
+      type: object
+      properties:
+        productId:
+          type: integer
+        itemCode:
+          type: string
+        productName:
+          type: string
+        type:
+          type: string
+        balance:
+          type: ["string", "null"]
+
+    StockList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/StockRow"
+        total:
+          type: integer
+
+    ProductLedgerRow:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        docType:
+          type: string
+        docNumber:
+          type: string
+        inQty:
+          type: ["string", "null"]
+        outQty:
+          type: ["string", "null"]
+        balance:
+          type: ["string", "null"]
+
+    ProductLedgerList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductLedgerRow"
+        total:
+          type: integer
+
+    GatePassRegisterRow:
+      type: object
+      properties:
+        id:
+          type: integer
+        gpNumber:
+          type: string
+        date:
+          type: string
+        partyName:
+          type: ["string", "null"]
+        linkedBillNumber:
+          type: ["string", "null"]
+
+    GatePassRegisterList:
+      type: object
+      required: [rows, total]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/GatePassRegisterRow"
+        total:
+          type: integer
+
+    # ── Dashboard ───────────────────────────────────────────────────────────────
+    DashboardSummary:
+      type: object
+      properties:
+        totalStockIn:
+          type: ["string", "null"]
+        totalStockOut:
+          type: ["string", "null"]
+        totalPurchaseAmount:
+          type: ["string", "null"]
+        totalSalesAmount:
+          type: ["string", "null"]
+
+    TodaySummary:
+      type: object
+      properties:
+        purchaseGatePasses:
+          type: integer
+        purchaseBills:
+          type: integer
+        saleGatePasses:
+          type: integer
+        salesBills:
+          type: integer
+        paymentPaids:
+          type: integer
+        paymentReceives:
+          type: integer
+
+    OutstandingSummary:
+      type: object
+      properties:
+        totalPurchaseOutstanding:
+          type: ["string", "null"]
+        totalSaleOutstanding:
+          type: ["string", "null"]
+
+    RecentTransaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        docType:
+          type: string
+        docNumber:
+          type: string
+        date:
+          type: string
+        partyName:
+          type: ["string", "null"]
+        amount:
+          type: ["string", "null"]
+
+    RecentTransactionList:
+      type: object
+      required: [rows]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecentTransaction"
+
+    LowStockRow:
+      type: object
+      properties:
+        productId:
+          type: integer
+        itemCode:
+          type: string
+        productName:
+          type: string
+        balance:
+          type: ["string", "null"]
+
+    LowStockList:
+      type: object
+      required: [rows]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/LowStockRow"
