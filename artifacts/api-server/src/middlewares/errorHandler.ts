@@ -30,6 +30,13 @@ import {
   PurchaseBillValidationError,
 } from "../services/purchaseBillService";
 
+// Service errors — Payment Paid
+import {
+  PaymentPaidNotFoundError,
+  PaymentPaidPartyNotFoundError,
+  PaymentPaidValidationError,
+} from "../services/paymentPaidService";
+
 // Service errors — Number Series
 import { NumberSeriesNotFoundError } from "../services/numberSeriesService";
 
@@ -101,7 +108,9 @@ export function errorHandler(
     err instanceof PurchasePartyNotFoundError ||
     err instanceof PurchaseBillPartyNotFoundError ||
     err instanceof PurchaseGatePassProductNotFoundError ||
-    err instanceof PurchaseBillGatePassNotFoundError
+    err instanceof PurchaseBillGatePassNotFoundError ||
+    err instanceof PaymentPaidNotFoundError ||
+    err instanceof PaymentPaidPartyNotFoundError
   ) {
     sendError(res, 404, err.message, err.name);
     return;
@@ -110,7 +119,8 @@ export function errorHandler(
   // ---- 400 Bad Request — validation errors from services -------------------
   if (
     err instanceof PurchaseGatePassValidationError ||
-    err instanceof PurchaseBillValidationError
+    err instanceof PurchaseBillValidationError ||
+    err instanceof PaymentPaidValidationError
   ) {
     sendError(res, 400, err.message, err.name);
     return;
