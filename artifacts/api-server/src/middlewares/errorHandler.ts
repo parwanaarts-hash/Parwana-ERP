@@ -46,6 +46,15 @@ import {
   SaleGatePassValidationError,
 } from "../services/saleGatePassService";
 
+// Service errors — Sales Bill
+import {
+  SalesBillNotFoundError,
+  SalesBillPartyNotFoundError,
+  SalesBillGatePassNotFoundError,
+  SalesBillGatePassPartyMismatchError,
+  SalesBillValidationError,
+} from "../services/salesBillService";
+
 // Service errors — Number Series
 import { NumberSeriesNotFoundError } from "../services/numberSeriesService";
 
@@ -123,7 +132,11 @@ export function errorHandler(
     err instanceof SaleGatePassNotFoundError ||
     err instanceof SalePartyNotFoundError ||
     err instanceof SaleGatePassProductNotFoundError ||
-    err instanceof SaleGatePassLinkedToBillError
+    err instanceof SaleGatePassLinkedToBillError ||
+    err instanceof SalesBillNotFoundError ||
+    err instanceof SalesBillPartyNotFoundError ||
+    err instanceof SalesBillGatePassNotFoundError ||
+    err instanceof SalesBillGatePassPartyMismatchError
   ) {
     sendError(res, 404, err.message, err.name);
     return;
@@ -134,7 +147,8 @@ export function errorHandler(
     err instanceof PurchaseGatePassValidationError ||
     err instanceof PurchaseBillValidationError ||
     err instanceof PaymentPaidValidationError ||
-    err instanceof SaleGatePassValidationError
+    err instanceof SaleGatePassValidationError ||
+    err instanceof SalesBillValidationError
   ) {
     sendError(res, 400, err.message, err.name);
     return;
