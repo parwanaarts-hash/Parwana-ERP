@@ -1,17 +1,27 @@
-import { pgTable, serial, text, date, numeric, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, date, numeric, timestamp, check } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { salePartiesTable } from "./sale_parties";
+import { purchasePartiesTable } from "./purchase_parties";
 
 export const ledgerEntriesTable = pgTable("ledger_entries", {
   id: serial("id").primaryKey(),
 
-  // Planning document Section 3.10: Ledger belongs to a specific party (Purchase or Sale).
-  // TODO: Party reference will be added after the complete database relationship architecture
-  // is finalized and approved (AD-17 on HOLD). Planning document supports ledger search for
-  // both Purchase Parties and Sale Parties — the polymorphic relationship structure must
-  // be defined first.
+  // Architecture decision AD-17: Two nullable FK columns, exactly one must be populated.
+  // Financial Ledger is Party-based only — every entry belongs to either a Sale Party
+  // or a Purchase Party, never both, never neither.
+  // CHECK constraint below enforces this at the database level.
+  // ON DELETE RESTRICT: a party cannot be deleted while it has ledger history.
 
-  // Planning document Section 3.10 Main Fields: "Date"
+  // Sale Party: ledger entries for Sales Bills, Return Bills, Payment Receives.
+  salePartyId: integer("sale_party_id")
+    .references(() => salePartiesTable.id, { onDelete: "restrict" }),
+
+  // Purchase Party: ledger entries for Purchase Bills, Payment Paids.
+  purchasePartyId: integer("purchase_party_id")
+    .references(() => purchasePartiesTable.id, { onDelete: "restrict" }),
+
   // Architecture decision AD-01: date type. Calendar date only — no time-of-day required.
   date: date("date").notNull(),
 
@@ -36,8 +46,6 @@ export const ledgerEntriesTable = pgTable("ledger_entries", {
   // Planning document Section 3.10 Main Fields: "Balance"
   // Architecture decision AD-20: balance stored as a column.
   // Maintained by application/business logic on every ledger entry save.
-  // Formula: previous_balance + debit - credit (per ledger convention for this business).
-  // Architecture decision: Financial Ledger = Party-based only.
   balance: numeric("balance", { precision: 12, scale: 2 }).notNull(),
 
   // TODO: Ledger posting logic — entries are auto-created when Bills and Payments are
@@ -45,13 +53,23 @@ export const ledgerEntriesTable = pgTable("ledger_entries", {
   // architecture is finalized.
 
   // TODO: "View Linked Document" — clicking Ref No opens the related Bill or Gate Pass
-  // popup. Application-layer logic — will be implemented after relationship architecture
-  // (AD-17) is finalized.
+  // popup. Application-layer logic — will be implemented after AD-16 is finalized.
 
   // Planning document Section 5.4: Har record ke sath Date aur Time automatically save hogi
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+
+}, (table) => [
+  // Architecture decision AD-17: exactly ONE party FK must be populated per ledger entry.
+  // Valid:   sale_party_id filled + purchase_party_id null
+  // Valid:   purchase_party_id filled + sale_party_id null
+  // Invalid: both null (unowned entry)
+  // Invalid: both filled (ambiguous ownership)
+  check(
+    "ledger_party_check",
+    sql`(${table.salePartyId} IS NOT NULL AND ${table.purchasePartyId} IS NULL) OR (${table.salePartyId} IS NULL AND ${table.purchasePartyId} IS NOT NULL)`
+  ),
+]);
 
 export const insertLedgerEntrySchema = createInsertSchema(ledgerEntriesTable).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertLedgerEntry = z.infer<typeof insertLedgerEntrySchema>;

@@ -1,4 +1,4 @@
-import { pgTable, serial, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, numeric, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -11,16 +11,32 @@ export const salesBillItemsTable = pgTable("sales_bill_items", {
   // TODO: Product relationship (product_id) will be implemented after the complete
   // database relationship architecture is finalized and approved.
 
-  // Planning document Section 3.4 Main Fields: "Product Details (Auto Load)"
-  // Auto-loaded from Sale Gate Pass: Product Name, Quantity.
-  // TODO: Planning document does NOT define the datatype for Quantity
-  // (integer vs decimal — needed for Guz measurements). Datatype will be finalized
-  // after architecture approval.
+  // Planning document Section 3.4 Main Fields: "Product" — item name/description.
+  // Auto-loaded from Sale Gate Pass. Text field preserving the item description
+  // at time of billing.
+  item: text("item"),
 
-  // Planning document Section 3.4: Bill items carry rate and amount information.
-  // TODO: Planning document does NOT define the datatype for Rate or Bill Amount
-  // (numeric precision/scale not specified). Datatypes will be finalized after
-  // architecture approval.
+  // Planning document Section 3.4 Main Fields: "Quantity"
+  // Auto-loaded from Sale Gate Pass.
+  // Architecture decision AD-02: numeric(10,3) — covers whole units (Set/Suit)
+  // and fractional Guz (Than) uniformly.
+  qty: numeric("qty", { precision: 10, scale: 3 }),
+
+  // Gazana: per-piece Guz measurement for Than-type products.
+  // Architecture decision AD-02: numeric(10,3) — measurement value, not monetary.
+  gazana: numeric("gazana", { precision: 10, scale: 3 }),
+
+  // Base rate for the item.
+  // Architecture decision AD-03: numeric(12,2) — monetary field.
+  rate: numeric("rate", { precision: 12, scale: 2 }),
+
+  // Final negotiated/calculated rate applied to this line item.
+  // Architecture decision AD-03: numeric(12,2) — monetary field.
+  finalRate: numeric("final_rate", { precision: 12, scale: 2 }),
+
+  // Line item total amount.
+  // Architecture decision AD-03: numeric(12,2) — monetary field.
+  total: numeric("total", { precision: 12, scale: 2 }),
 
   // TODO: Ledger update logic — "Sales Bill Save hote hi Customer ka Ledger automatically
   // update ho jayega." — is business logic and will be implemented after the Ledger table

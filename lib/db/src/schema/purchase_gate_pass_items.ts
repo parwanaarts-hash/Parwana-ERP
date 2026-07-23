@@ -1,4 +1,4 @@
-import { pgTable, serial, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, numeric, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -11,23 +11,32 @@ export const purchaseGatePassItemsTable = pgTable("purchase_gate_pass_items", {
   // TODO: Product relationship (product_id) will be implemented after the complete
   // database relationship architecture is finalized and approved.
 
-  // Planning document Section 2.2 Main Fields: "Quantity" / "Gate Pass Quantity"
+  // Planning document Section 2.2 Main Fields: "Product" — item name/description.
+  // Text field preserving the item description at time of entry.
+  item: text("item"),
+
+  // Planning document Section 2.2 Main Fields: "Gate Pass Quantity"
   // "Ye supplier ke Gate Pass par likhi hui original quantity hogi."
-  // TODO: Planning document does NOT define the datatype for Gate Pass Quantity
-  // (integer vs decimal — needed for Guz measurements). Datatype will be finalized
-  // after architecture approval.
+  // Architecture decision AD-02: numeric(10,3) — covers whole units (Set/Suit)
+  // and fractional Guz (Than) uniformly.
+  qty: numeric("qty", { precision: 10, scale: 3 }),
+
+  // Gazana: per-piece Guz measurement for Than-type products.
+  // Architecture decision AD-02: numeric(10,3) — measurement value, not monetary.
+  gazana: numeric("gazana", { precision: 10, scale: 3 }),
+
+  // Planning document Section 2.2 Main Fields: "Rate"
+  // Architecture decision AD-03: numeric(12,2) — monetary field.
+  rate: numeric("rate", { precision: 12, scale: 2 }),
 
   // Planning document Section 2.2 Main Fields: "Received Quantity"
   // "Ye warehouse mein physically receive hone wali actual quantity hogi."
-  // TODO: Planning document does NOT define the datatype for Received Quantity
-  // (integer vs decimal — needed for Guz measurements). Datatype will be finalized
-  // after architecture approval.
+  // Architecture decision AD-02: numeric(10,3).
+  receivedQty: numeric("received_qty", { precision: 10, scale: 3 }),
 
-  // Planning document Section 2.2: "Pending Quantity"
-  // "Software automatically Pending Quantity calculate karega."
-  // TODO: Planning document defines Pending Quantity as auto-calculated
-  // (Gate Pass Qty - Received Qty). Whether it should be stored as a column or always
-  // computed at query time is not defined. Will be finalized after architecture approval.
+  // Pending Quantity: architecture decision AD-19 REJECTED.
+  // Pending Quantity is always computed at runtime as: qty - received_qty.
+  // No stored column.
 
   // TODO: Stock update logic — "Sirf Received Quantity Stock mein add hogi. Gate Pass
   // Quantity kabhi Stock increase nahi karegi." — is business logic and will be
