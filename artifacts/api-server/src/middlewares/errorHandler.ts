@@ -83,6 +83,44 @@ import {
 // Service errors — Number Series
 import { NumberSeriesNotFoundError } from "../services/numberSeriesService";
 
+// Service errors — Purchase Party (master data)
+import {
+  PurchasePartyNotFoundError as PurchasePartyMasterNotFoundError,
+  PurchasePartyInUseError,
+  PurchasePartyValidationError,
+} from "../services/purchasePartyService";
+
+// Service errors — Sale Party (master data)
+import {
+  SalePartyNotFoundError as SalePartyMasterNotFoundError,
+  SalePartyInUseError,
+  SalePartyValidationError,
+} from "../services/salePartyService";
+
+// Service errors — Shikanja (master data)
+import {
+  ShikanjaNotFoundError,
+  ShikanjaInUseError,
+  ShikanjaValidationError,
+} from "../services/shikanjaService";
+
+// Service errors — Category (master data)
+import {
+  CategoryNotFoundError,
+  CategoryParentNotFoundError,
+  CategoryInUseError,
+  CategoryValidationError,
+} from "../services/categoryService";
+
+// Service errors — Product (master data)
+import {
+  ProductNotFoundError,
+  ProductCategoryNotFoundError,
+  ProductShikanjaNotFoundError,
+  ProductInUseError,
+  ProductValidationError,
+} from "../services/productService";
+
 // ---------------------------------------------------------------------------
 // ApiError — thrown by route helpers and converted here into HTTP responses
 // ---------------------------------------------------------------------------
@@ -171,7 +209,16 @@ export function errorHandler(
     err instanceof ReturnBillNotFoundError ||
     err instanceof ReturnBillPartyNotFoundError ||
     err instanceof ReturnBillGatePassNotFoundError ||
-    err instanceof ReturnBillGatePassPartyMismatchError
+    err instanceof ReturnBillGatePassPartyMismatchError ||
+    // Master data — not found
+    err instanceof PurchasePartyMasterNotFoundError ||
+    err instanceof SalePartyMasterNotFoundError     ||
+    err instanceof ShikanjaNotFoundError            ||
+    err instanceof CategoryNotFoundError            ||
+    err instanceof CategoryParentNotFoundError      ||
+    err instanceof ProductNotFoundError             ||
+    err instanceof ProductCategoryNotFoundError     ||
+    err instanceof ProductShikanjaNotFoundError
   ) {
     sendError(res, 404, err.message, err.name);
     return;
@@ -186,14 +233,28 @@ export function errorHandler(
     err instanceof SalesBillValidationError ||
     err instanceof PaymentReceiveValidationError ||
     err instanceof ReturnGatePassValidationError ||
-    err instanceof ReturnBillValidationError
+    err instanceof ReturnBillValidationError     ||
+    // Master data — validation
+    err instanceof PurchasePartyValidationError  ||
+    err instanceof SalePartyValidationError      ||
+    err instanceof ShikanjaValidationError       ||
+    err instanceof CategoryValidationError       ||
+    err instanceof ProductValidationError
   ) {
     sendError(res, 400, err.message, err.name);
     return;
   }
 
   // ---- 409 Conflict --------------------------------------------------------
-  if (err instanceof PurchaseGatePassLinkedToBillError) {
+  if (
+    err instanceof PurchaseGatePassLinkedToBillError ||
+    // Master data — in use (referenced by transactions)
+    err instanceof PurchasePartyInUseError           ||
+    err instanceof SalePartyInUseError               ||
+    err instanceof ShikanjaInUseError                ||
+    err instanceof CategoryInUseError                ||
+    err instanceof ProductInUseError
+  ) {
     sendError(res, 409, err.message, err.name);
     return;
   }

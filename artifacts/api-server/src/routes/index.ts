@@ -11,6 +11,11 @@ import returnBillsRouter from "./returnBills";
 import reportsRouter from "./reports";
 import stockReportsRouter from "./stockReports";
 import dashboardRouter from "./dashboard";
+import purchasePartiesRouter from "./purchaseParties";
+import salePartiesRouter from "./saleParties";
+import shikanjaRouter from "./shikanja";
+import categoriesRouter from "./categories";
+import productsRouter from "./products";
 
 const router: IRouter = Router();
 
@@ -26,5 +31,10 @@ router.use("/return-bills", returnBillsRouter);
 router.use("/reports", reportsRouter);
 router.use("/stock-reports", stockReportsRouter);
 router.use("/dashboard", dashboardRouter);
+router.use("/purchase-parties", purchasePartiesRouter);
+router.use("/sale-parties", salePartiesRouter);
+router.use("/shikanja", shikanjaRouter);
+router.use("/categories", categoriesRouter);
+router.use("/products", productsRouter);
 
 export default router;
