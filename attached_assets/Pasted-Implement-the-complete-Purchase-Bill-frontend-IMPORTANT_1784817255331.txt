@@ -1,0 +1,166 @@
+Implement the complete Purchase Bill frontend.
+
+IMPORTANT
+
+Do NOT modify:
+- Backend
+- APIs
+- Database
+- Business rules
+- Navigation
+- Dashboard layout
+
+Only replace the current placeholder Purchase Bill page.
+
+==================================================
+ROUTE
+==================================================
+
+/erp/purchase/purchase-bill
+
+Keep the existing AppShell, Toolbar and Breadcrumb.
+
+==================================================
+PAGE LAYOUT
+==================================================
+
+Exactly the same layout and UX pattern as Purchase Gate Pass.
+
+Use the same reusable components:
+
+- useMasterData
+- EntityTable
+- ConfirmDeleteDialog
+- PaginationFooter
+- Toolbar
+- react-hook-form
+- zod
+- TanStack Query
+
+Do not duplicate code.
+
+==================================================
+LIST
+==================================================
+
+Columns:
+
+- Bill No
+- Date
+- Purchase Party
+- Bill Amount
+- Remarks
+- Linked Gate Passes
+
+Toolbar actions:
+
+- Refresh
+- Save
+- Update
+- Delete
+- Exit
+
+Keyboard shortcuts must match Purchase Gate Pass.
+
+==================================================
+FORM
+==================================================
+
+Header:
+
+Bill No (read only)
+Bill Date
+Purchase Party
+Bill Amount
+Remarks
+
+Gate Pass Selection
+
+Instead of manual items,
+allow selecting one or more UNLINKED Purchase Gate Passes.
+
+Show a searchable multi-select list.
+
+Display:
+
+- GP Number
+- Date
+- Lot Number
+
+When one or more Gate Passes are selected:
+
+Automatically display the Bill Items returned from the backend.
+
+The user must NOT manually add/remove/edit bill items.
+
+Items are read-only because they are generated from the selected gate passes.
+
+==================================================
+VALIDATION
+==================================================
+
+Require:
+
+- Bill Date
+- Purchase Party
+- At least one Gate Pass
+
+Display inline validation errors.
+
+==================================================
+CRUD
+==================================================
+
+Use the existing generated API hooks.
+
+Implement:
+
+- List
+- Create
+- Edit
+- Delete
+- Get by ID
+
+Invalidate queries after successful mutations.
+
+==================================================
+EDIT MODE
+==================================================
+
+Load the full Purchase Bill.
+
+Restore:
+
+- Header
+- Selected Gate Passes
+- Auto-loaded Bill Items
+
+==================================================
+DELETE
+==================================================
+
+Use the existing confirmation dialog.
+
+==================================================
+UI
+==================================================
+
+Light theme only.
+
+English UI only.
+
+Do NOT show Urdu anywhere in the interface.
+
+==================================================
+IMPORTANT
+==================================================
+
+Do not redesign anything.
+
+Follow the exact UX pattern already used in Purchase Gate Pass.
+
+Run TypeScript typecheck.
+
+Fix every error.
+
+Return only a concise implementation report.
