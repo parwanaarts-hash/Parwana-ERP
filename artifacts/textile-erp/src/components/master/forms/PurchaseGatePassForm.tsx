@@ -26,19 +26,6 @@ import {
 } from "@/components/ui/select";
 import { AlertCircle, Plus, Trash2 } from "lucide-react";
 
-// ── Rate memory (localStorage) ────────────────────────────────────────────────
-const RATE_KEY = "pgp_rates_v1";
-const getRateCache = (): Record<number, string> => {
-  try { return JSON.parse(localStorage.getItem(RATE_KEY) ?? "{}"); }
-  catch { return {}; }
-};
-const persistRate = (productId: number, rate: string) => {
-  if (!rate || !productId) return;
-  const cache = getRateCache();
-  cache[productId] = rate;
-  try { localStorage.setItem(RATE_KEY, JSON.stringify(cache)); } catch { /* quota */ }
-};
-
 // ── Schema ────────────────────────────────────────────────────────────────────
 const itemSchema = z.object({
   productId: z.coerce.number().min(1, "Select a product"),
@@ -58,6 +45,18 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
+// ── Product search ────────────────────────────────────────────────────────────
+// Matches against itemCode and productName (English).
+// When the backend adds urduName, add: || (p.urduName ?? "").includes(q)
+// Urdu is RTL and does not use toLowerCase — keep that branch separate.
+function matchesProduct(p: Product, q: string): boolean {
+  const lower = q.toLowerCase();
+  return (
+    p.itemCode.toLowerCase().includes(lower) ||
+    p.productName.toLowerCase().includes(lower)
+  );
+}
+
 // ── ProductCombobox ───────────────────────────────────────────────────────────
 interface ProductComboboxProps {
   productId: number;
@@ -65,25 +64,33 @@ interface ProductComboboxProps {
   onSelect: (id: number) => void;
   onMoveNext: () => void;
   rowIdx: number;
+  // Future: urduNames?: Record<number, string>  ← injected for print display
 }
 
-function ProductCombobox({ productId, products, onSelect, onMoveNext, rowIdx }: ProductComboboxProps) {
+function ProductCombobox({
+  productId,
+  products,
+  onSelect,
+  onMoveNext,
+  rowIdx,
+}: ProductComboboxProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [hiIdx, setHiIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const selected = products.find(p => p.id === productId);
-  const displayVal = open ? query : (selected ? `${selected.itemCode} – ${selected.productName}` : "");
+  // Display: English values only. Urdu display for print documents will be
+  // injected separately without changing this data-entry screen.
+  const displayVal = open
+    ? query
+    : selected
+    ? `${selected.itemCode} – ${selected.productName}`
+    : "";
 
   const filtered = (() => {
-    const q = query.trim().toLowerCase();
-    const list = q
-      ? products.filter(p =>
-          p.itemCode.toLowerCase().includes(q) ||
-          p.productName.toLowerCase().includes(q)
-        )
-      : products;
+    const q = query.trim();
+    const list = q ? products.filter(p => matchesProduct(p, q)) : products;
     return list.slice(0, 40);
   })();
 
@@ -99,18 +106,33 @@ function ProductCombobox({ productId, products, onSelect, onMoveNext, rowIdx }: 
       <input
         ref={inputRef}
         value={displayVal}
-        placeholder="Search product…"
+        placeholder="کوڈ یا نام تلاش کریں…"
         autoComplete="off"
+        spellCheck={false}
         data-grid-row={rowIdx}
         data-grid-col={0}
+        // data-product-id stored for future Urdu print overlay
+        data-product-id={productId || undefined}
         className="h-8 w-full rounded border border-input bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-        onChange={e => { setQuery(e.target.value); setOpen(true); setHiIdx(0); }}
-        onFocus={() => { setOpen(true); setQuery(""); setHiIdx(0); }}
+        onChange={e => {
+          setQuery(e.target.value);
+          setOpen(true);
+          setHiIdx(0);
+        }}
+        onFocus={() => {
+          setOpen(true);
+          setQuery("");
+          setHiIdx(0);
+        }}
         onBlur={() => setTimeout(() => setOpen(false), 160)}
         onKeyDown={e => {
-          if (e.key === "ArrowDown") { e.preventDefault(); setHiIdx(i => Math.min(i + 1, filtered.length - 1)); }
-          else if (e.key === "ArrowUp") { e.preventDefault(); setHiIdx(i => Math.max(i - 1, 0)); }
-          else if (e.key === "Enter") {
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setHiIdx(i => Math.min(i + 1, filtered.length - 1));
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setHiIdx(i => Math.max(i - 1, 0));
+          } else if (e.key === "Enter") {
             e.preventDefault();
             e.stopPropagation();
             if (open && filtered[hiIdx]) {
@@ -132,14 +154,28 @@ function ProductCombobox({ productId, products, onSelect, onMoveNext, rowIdx }: 
               key={p.id}
               onMouseDown={() => pick(p)}
               className={`flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer select-none ${
-                i === hiIdx ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                i === hiIdx
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted"
               }`}
             >
-              <span className={`font-mono text-xs px-1.5 py-0.5 rounded shrink-0 ${i === hiIdx ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              <span
+                className={`font-mono text-xs px-1.5 py-0.5 rounded shrink-0 ${
+                  i === hiIdx
+                    ? "bg-primary-foreground/20 text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
                 {p.itemCode}
               </span>
               <span className="truncate flex-1">{p.productName}</span>
-              <span className={`text-xs shrink-0 ${i === hiIdx ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+              <span
+                className={`text-xs shrink-0 ${
+                  i === hiIdx
+                    ? "text-primary-foreground/70"
+                    : "text-muted-foreground"
+                }`}
+              >
                 {p.type}
               </span>
             </div>
@@ -153,11 +189,18 @@ function ProductCombobox({ productId, products, onSelect, onMoveNext, rowIdx }: 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const today = new Date().toISOString().split("T")[0];
 const toNum = (s?: string) => parseFloat(s || "0") || 0;
-const fmtNum = (n: number, dec = 2) =>
-  n.toLocaleString("en-PK", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+const fmtNum = (n: number, dec = 3) =>
+  n.toLocaleString("en-PK", {
+    minimumFractionDigits: dec,
+    maximumFractionDigits: dec,
+  });
 
 const emptyItem = (): FormData["items"][0] => ({
-  productId: 0, qty: "", gazana: "", rate: "", receivedQty: "",
+  productId: 0,
+  qty: "",
+  gazana: "",
+  rate: "",
+  receivedQty: "",
 });
 
 const defaultValues = (d?: PurchaseGatePass): FormData => ({
@@ -212,23 +255,30 @@ export function PurchaseGatePassForm({
     form.reset(defaultValues(initialData));
   }, [initialData?.id]);
 
-  // Propagate dirty state up
+  // Propagate dirty state upward
   const isDirty = form.formState.isDirty;
-  useEffect(() => { onDirtyChange?.(isDirty); }, [isDirty, onDirtyChange]);
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
-  // Browser-level unsaved changes guard
+  // Browser-level unsaved-changes guard
   useEffect(() => {
     if (!isDirty) return;
-    const h = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ""; };
+    const h = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
     window.addEventListener("beforeunload", h);
     return () => window.removeEventListener("beforeunload", h);
   }, [isDirty]);
 
-  // Live totals from watched items
+  // Live totals — qty and gazana only.
+  // NOTE: Amount (qty × rate) is NOT computed here. Monetary totals belong
+  // to the Purchase Bill, not the Gate Pass. The backend stores no amount
+  // field on gate pass items; billing happens at purchase_bill_items.
   const watchedItems = form.watch("items");
   const totalQty = watchedItems.reduce((s, i) => s + toNum(i.qty), 0);
   const totalGazana = watchedItems.reduce((s, i) => s + toNum(i.gazana), 0);
-  const totalAmount = watchedItems.reduce((s, i) => s + toNum(i.qty) * toNum(i.rate), 0);
 
   // Focus management
   const focusCell = useCallback((row: number, col: number) => {
@@ -263,10 +313,11 @@ export function PurchaseGatePassForm({
         shouldDirty: true,
         shouldValidate: true,
       });
-      const cached = getRateCache()[productId];
-      if (cached) {
-        form.setValue(`items.${rowIdx}.rate`, cached, { shouldDirty: true });
-      }
+      // Rate is NOT auto-filled from any local cache.
+      // Rate comes from what the operator types per transaction.
+      // If a "last rate" feature is needed in future, it must come from the
+      // backend (e.g. a GET /products/:id/last-rate endpoint), never from
+      // browser storage.
     },
     [form]
   );
@@ -295,32 +346,34 @@ export function PurchaseGatePassForm({
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex flex-col"
       >
-        {/* ── Dirty banner ──────────────────────────────────────────────────── */}
+        {/* ── Unsaved changes banner ────────────────────────────────────────── */}
         {isDirty && (
           <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-50 border-b border-amber-200 text-amber-800 text-xs">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-            Unsaved changes — press
+            غیر محفوظ تبدیلیاں —{" "}
             <kbd className="mx-0.5 px-1.5 py-0.5 bg-amber-100 border border-amber-300 rounded text-xs font-mono">
               Ctrl+S
-            </kbd>
-            to save or
+            </kbd>{" "}
+            محفوظ کریں یا{" "}
             <kbd className="mx-0.5 px-1.5 py-0.5 bg-amber-100 border border-amber-300 rounded text-xs font-mono">
               Esc
-            </kbd>
-            to discard.
+            </kbd>{" "}
+            چھوڑیں
           </div>
         )}
 
-        {/* ── Header ────────────────────────────────────────────────────────── */}
+        {/* ── Header strip ──────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 px-4 py-3 bg-muted/20 border-b">
-          {/* GP # – read-only */}
+          {/* GP # — system-assigned, read-only */}
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground leading-none">GP #</label>
+            <label className="text-xs font-medium text-muted-foreground leading-none">
+              GP #
+            </label>
             <Input
               value={gpNumber ?? "Auto"}
               readOnly
               disabled
-              className="h-8 text-sm bg-muted/60 cursor-not-allowed"
+              className="h-8 text-sm bg-muted/60 cursor-not-allowed font-mono"
               data-testid="input-gp-number"
             />
           </div>
@@ -332,7 +385,7 @@ export function PurchaseGatePassForm({
             render={({ field }) => (
               <FormItem className="space-y-1">
                 <FormLabel className="text-xs font-medium text-muted-foreground leading-none">
-                  Date
+                  تاریخ
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -343,11 +396,13 @@ export function PurchaseGatePassForm({
                     onKeyDown={e => {
                       if (e.key === "Enter") {
                         e.preventDefault();
-                        (e.currentTarget
-                          .closest("form")
-                          ?.querySelector(
-                            "[data-testid='select-gp-party'] button"
-                          ) as HTMLElement | null)?.focus();
+                        (
+                          e.currentTarget
+                            .closest("form")
+                            ?.querySelector(
+                              "[data-testid='select-gp-party'] button"
+                            ) as HTMLElement | null
+                        )?.focus();
                       }
                     }}
                   />
@@ -364,7 +419,7 @@ export function PurchaseGatePassForm({
             render={({ field }) => (
               <FormItem className="space-y-1">
                 <FormLabel className="text-xs font-medium text-muted-foreground leading-none">
-                  Purchase Party
+                  خریداری فریق
                 </FormLabel>
                 <Select
                   value={field.value ? String(field.value) : ""}
@@ -375,7 +430,7 @@ export function PurchaseGatePassForm({
                       className="h-8 text-sm"
                       data-testid="select-gp-party"
                     >
-                      <SelectValue placeholder="Select party…" />
+                      <SelectValue placeholder="فریق منتخب کریں" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -398,22 +453,23 @@ export function PurchaseGatePassForm({
             render={({ field }) => (
               <FormItem className="space-y-1">
                 <FormLabel className="text-xs font-medium text-muted-foreground leading-none">
-                  Lot #
+                  لاٹ نمبر
                 </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    className="h-8 text-sm"
-                    placeholder="e.g. LOT-001"
+                    className="h-8 text-sm font-mono"
                     data-testid="input-gp-lotnumber"
                     onKeyDown={e => {
                       if (e.key === "Enter") {
                         e.preventDefault();
-                        (e.currentTarget
-                          .closest("form")
-                          ?.querySelector(
-                            "[data-testid='input-gp-remarks']"
-                          ) as HTMLElement | null)?.focus();
+                        (
+                          e.currentTarget
+                            .closest("form")
+                            ?.querySelector(
+                              "[data-testid='input-gp-remarks']"
+                            ) as HTMLElement | null
+                        )?.focus();
                       }
                     }}
                   />
@@ -430,12 +486,11 @@ export function PurchaseGatePassForm({
             render={({ field }) => (
               <FormItem className="space-y-1 lg:col-span-2">
                 <FormLabel className="text-xs font-medium text-muted-foreground leading-none">
-                  Remarks
+                  نوٹ
                 </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    placeholder="Optional…"
                     className="h-8 text-sm"
                     data-testid="input-gp-remarks"
                     onKeyDown={e => {
@@ -452,15 +507,23 @@ export function PurchaseGatePassForm({
           />
         </div>
 
-        {/* ── Items section ──────────────────────────────────────────────────── */}
+        {/* ── Items grid ────────────────────────────────────────────────────── */}
         <div className="flex flex-col flex-1">
           {/* Grid toolbar */}
           <div className="flex items-center justify-between px-4 py-2 bg-muted/10 border-b">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Items / اشیاء
-              {(form.formState.errors.items as any)?.message && (
+              اشیاء / Items
+              {(form.formState.errors.items as { message?: string } | undefined)
+                ?.message && (
                 <span className="ml-2 normal-case font-normal text-destructive">
-                  — {(form.formState.errors.items as any).message}
+                  —{" "}
+                  {
+                    (
+                      form.formState.errors.items as {
+                        message?: string;
+                      }
+                    ).message
+                  }
                 </span>
               )}
             </span>
@@ -473,12 +536,15 @@ export function PurchaseGatePassForm({
               className="flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-800 px-2.5 py-1.5 rounded-md hover:bg-blue-50 transition-colors border border-blue-200 hover:border-blue-300"
               data-testid="button-add-row"
             >
-              <Plus className="h-3.5 w-3.5" /> Add Row
+              <Plus className="h-3.5 w-3.5" /> قطار شامل کریں
             </button>
           </div>
 
           {/* Grid */}
-          <div className="overflow-auto" style={{ minHeight: "260px", maxHeight: "420px" }}>
+          <div
+            className="overflow-auto"
+            style={{ minHeight: "260px", maxHeight: "420px" }}
+          >
             <table className="w-full text-sm border-collapse">
               <thead className="bg-muted/50 sticky top-0 z-10">
                 <tr>
@@ -489,22 +555,19 @@ export function PurchaseGatePassForm({
                     className="border-b border-r px-3 py-2 text-left text-xs font-medium text-muted-foreground select-none"
                     style={{ minWidth: "220px" }}
                   >
-                    Product / پروڈکٹ
+                    پروڈکٹ / Product
                   </th>
                   <th className="border-b border-r px-3 py-2 text-right text-xs font-medium text-muted-foreground w-24 select-none">
-                    Qty / مقدار
+                    مقدار / Qty
                   </th>
                   <th className="border-b border-r px-3 py-2 text-right text-xs font-medium text-muted-foreground w-24 select-none">
-                    Gazana / گزانہ
+                    گزانہ / Gazana
                   </th>
                   <th className="border-b border-r px-3 py-2 text-right text-xs font-medium text-muted-foreground w-28 select-none">
-                    Rate / ریٹ
+                    ریٹ / Rate
                   </th>
                   <th className="border-b border-r px-3 py-2 text-right text-xs font-medium text-muted-foreground w-28 select-none">
-                    Rcvd Qty / موصول
-                  </th>
-                  <th className="border-b border-r px-3 py-2 text-right text-xs font-medium text-muted-foreground w-32 select-none bg-blue-50/60">
-                    Amount
+                    موصول / Rcvd Qty
                   </th>
                   <th className="border-b px-2 py-2 text-center text-xs text-muted-foreground w-10 select-none" />
                 </tr>
@@ -512,7 +575,10 @@ export function PurchaseGatePassForm({
               <tbody>
                 {fields.map((field, index) => {
                   const row = watchedItems[index];
-                  const rowAmt = toNum(row?.qty) * toNum(row?.rate);
+                  // pendingQty = qty − receivedQty, computed at runtime for
+                  // operator awareness. Not sent to backend separately.
+                  const pendingQty =
+                    toNum(row?.qty) - toNum(row?.receivedQty);
 
                   return (
                     <tr
@@ -535,7 +601,10 @@ export function PurchaseGatePassForm({
                         />
                         {form.formState.errors.items?.[index]?.productId && (
                           <p className="text-xs text-destructive mt-0.5 px-0.5">
-                            {form.formState.errors.items[index].productId?.message}
+                            {
+                              form.formState.errors.items[index].productId
+                                ?.message
+                            }
                           </p>
                         )}
                       </td>
@@ -544,7 +613,7 @@ export function PurchaseGatePassForm({
                       <td className="border-r px-1.5 py-1">
                         <input
                           type="number"
-                          step="0.01"
+                          step="0.001"
                           min="0"
                           placeholder="0"
                           {...form.register(`items.${index}.qty`)}
@@ -564,7 +633,7 @@ export function PurchaseGatePassForm({
                       <td className="border-r px-1.5 py-1">
                         <input
                           type="number"
-                          step="0.01"
+                          step="0.001"
                           min="0"
                           placeholder="0"
                           {...form.register(`items.${index}.gazana`)}
@@ -597,38 +666,41 @@ export function PurchaseGatePassForm({
                               handleCellEnter(index, 3, fields.length);
                             }
                           }}
-                          onBlur={e => {
-                            const pid = form.getValues(`items.${index}.productId`);
-                            persistRate(pid, e.target.value);
-                          }}
                         />
                       </td>
 
                       {/* Received Qty */}
                       <td className="border-r px-1.5 py-1">
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="0"
-                          {...form.register(`items.${index}.receivedQty`)}
-                          data-grid-row={index}
-                          data-grid-col={4}
-                          className={cellCls}
-                          onKeyDown={e => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleCellEnter(index, 4, fields.length);
-                            }
-                          }}
-                        />
-                      </td>
-
-                      {/* Row amount (computed) */}
-                      <td className="border-r px-3 py-1 text-right tabular-nums bg-blue-50/30">
-                        <span className={rowAmt > 0 ? "font-medium text-foreground" : "text-muted-foreground"}>
-                          {rowAmt > 0 ? fmtNum(rowAmt) : "—"}
-                        </span>
+                        <div className="flex flex-col gap-0.5">
+                          <input
+                            type="number"
+                            step="0.001"
+                            min="0"
+                            placeholder="0"
+                            {...form.register(`items.${index}.receivedQty`)}
+                            data-grid-row={index}
+                            data-grid-col={4}
+                            className={cellCls}
+                            onKeyDown={e => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleCellEnter(index, 4, fields.length);
+                              }
+                            }}
+                          />
+                          {/* Pending indicator — operator awareness only */}
+                          {toNum(row?.qty) > 0 && pendingQty !== 0 && (
+                            <span
+                              className={`text-[10px] text-right tabular-nums leading-none ${
+                                pendingQty > 0
+                                  ? "text-amber-600"
+                                  : "text-red-600"
+                              }`}
+                            >
+                              باقی: {fmtNum(pendingQty)}
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Delete row */}
@@ -638,7 +710,7 @@ export function PurchaseGatePassForm({
                           onClick={() => fields.length > 1 && remove(index)}
                           disabled={fields.length <= 1}
                           className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-red-50 hover:text-red-600 disabled:opacity-20 disabled:cursor-not-allowed text-muted-foreground transition-colors opacity-0 group-hover:opacity-100"
-                          title="Remove row"
+                          title="قطار حذف کریں"
                           data-testid={`button-delete-row-${index}`}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -651,30 +723,32 @@ export function PurchaseGatePassForm({
             </table>
           </div>
 
-          {/* ── Totals footer ──────────────────────────────────────────────── */}
-          <div className="flex items-center justify-between gap-6 px-4 py-2.5 bg-muted/30 border-t">
-            <div className="flex items-center gap-6 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Total Qty:</span>
-                <span className="font-semibold tabular-nums min-w-[3rem] text-right">
-                  {totalQty > 0 ? fmtNum(totalQty) : "—"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Total Gazana:</span>
-                <span className="font-semibold tabular-nums min-w-[3rem] text-right">
-                  {totalGazana > 0 ? fmtNum(totalGazana) : "—"}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground hidden lg:block">
-                Press <kbd className="px-1 py-0.5 bg-muted border rounded text-xs">Enter</kbd> in a cell to advance.
-                Rate is remembered per product.
-              </p>
+          {/* ── Totals footer ────────────────────────────────────────────────── */}
+          {/* Only qty and gazana are totalled here. Amount totals belong to   */}
+          {/* the Purchase Bill — the gate pass has no monetary total.         */}
+          <div className="flex items-center gap-8 px-4 py-2.5 bg-muted/30 border-t text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                کل مقدار:
+              </span>
+              <span className="font-semibold tabular-nums min-w-[4rem] text-right">
+                {totalQty > 0 ? fmtNum(totalQty) : "—"}
+              </span>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">Grand Total:</span>
-              <span className="text-xl font-bold tabular-nums">
-                Rs&nbsp;{fmtNum(totalAmount)}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                کل گزانہ:
+              </span>
+              <span className="font-semibold tabular-nums min-w-[4rem] text-right">
+                {totalGazana > 0 ? fmtNum(totalGazana) : "—"}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                کل اشیاء:
+              </span>
+              <span className="font-semibold tabular-nums">
+                {fields.length}
               </span>
             </div>
           </div>
