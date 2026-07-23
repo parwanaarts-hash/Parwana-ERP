@@ -1,0 +1,164 @@
+Implement the complete Sales Bill frontend.
+
+IMPORTANT
+
+Do NOT modify:
+
+- Backend
+- APIs
+- Database
+- Business rules
+- Navigation
+- Dashboard layout
+
+Only replace the current Sales Bill placeholder page.
+
+==================================================
+ROUTE
+==================================================
+
+/erp/sales/sales-bill
+
+Keep the existing AppShell, Toolbar and Breadcrumb.
+
+==================================================
+PAGE LAYOUT
+==================================================
+
+Follow exactly the same UX, architecture and coding style as:
+
+- PurchaseGatePassPage
+- PurchaseBillPage
+
+Reuse existing shared components.
+
+Do not duplicate code.
+
+==================================================
+LIST
+==================================================
+
+Columns:
+
+- Bill No
+- Date
+- Sale Party
+- Bill Type
+- Bill Amount
+- Cash Payment
+- Bank Payment
+- Remarks
+- Linked Gate Passes
+
+Toolbar:
+
+- Refresh
+- Save
+- Update
+- Delete
+- Exit
+
+Keep all existing keyboard shortcuts.
+
+==================================================
+FORM
+==================================================
+
+Header:
+
+- Bill No (read only)
+- Bill Date
+- Sale Party
+- Bill Type (Cash / Credit)
+- Bill Amount
+- Cash Payment
+- Bank Payment
+- Remarks
+
+==================================================
+SALE GATE PASS SELECTION
+==================================================
+
+Allow selecting one or more UNLINKED Sale Gate Passes.
+
+Display:
+
+- GP Number
+- Date
+
+When gate passes are selected:
+
+Automatically load and display Bill Items returned from the backend.
+
+Items are read-only.
+
+The user must never manually edit bill items.
+
+==================================================
+VALIDATION
+==================================================
+
+Require:
+
+- Bill Date
+- Sale Party
+- Bill Type
+- At least one Gate Pass
+
+Inline validation errors.
+
+==================================================
+CRUD
+==================================================
+
+Implement:
+
+- List
+- Create
+- Update
+- Delete
+- Get by ID
+
+Use existing generated API hooks.
+
+Invalidate queries after successful mutations.
+
+==================================================
+EDIT MODE
+==================================================
+
+Restore:
+
+- Header
+- Selected Gate Passes
+- Auto-generated Bill Items
+
+==================================================
+DELETE
+==================================================
+
+Use existing ConfirmDeleteDialog.
+
+==================================================
+UI
+==================================================
+
+Light theme only.
+
+Entire interface in English.
+
+No Urdu anywhere in the software UI.
+
+==================================================
+IMPORTANT
+==================================================
+
+Follow the exact implementation quality and architecture used in Purchase Bill.
+
+Do not redesign anything.
+
+Run TypeScript typecheck.
+
+Fix every error.
+
+Return only a concise implementation report.
