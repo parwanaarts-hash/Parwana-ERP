@@ -8,7 +8,10 @@ export const companyInfoTable = pgTable("company_info", {
   // Planning document Section 5.5: "Company Name"
   companyName: text("company_name").notNull(),
 
-  // TODO: Company Logo storage mechanism will be implemented after architecture approval.
+  // Architecture decision AD-23: logo_path stored as nullable text.
+  // Stores the file system path to the uploaded logo image.
+  // Nullable: logo upload is optional — not all installations will configure a logo.
+  logoPath: text("logo_path"),
 
   // Planning document Section 5.5: "Address"
   address: text("address"),

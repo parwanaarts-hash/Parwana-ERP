@@ -1,4 +1,5 @@
-import { pgTable, serial, integer, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, timestamp, index, check } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { categoriesTable } from "./categories";
@@ -16,10 +17,8 @@ export const productsTable = pgTable("products", {
   productName: text("product_name").notNull(),
 
   // Planning document Section 2.1: "Product save karte waqt uska Type select karna lazmi hoga"
-  // Defined types: Set, Than, Suit
-  // Architecture decision AD-04: stored as text. CHECK constraint ('Set','Than','Suit')
-  // will be added during schema finalization.
-  // TODO: CHECK constraint to be applied in schema finalization phase.
+  // Architecture decision AD-04: stored as text with CHECK constraint.
+  // Allowed values: 'Set', 'Than', 'Suit' — exactly as defined in the planning document.
   type: text("type").notNull(),
 
   // Architecture decision AD-11: sub_category_id FK to categories table.
@@ -38,7 +37,15 @@ export const productsTable = pgTable("products", {
   // Planning document Section 5.4: Har record ke sath Date aur Time automatically save hogi
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+
+}, (table) => [
+  // Architecture decision AD-04: type must be one of the three defined product types.
+  check("products_type_check", sql`${table.type} IN ('Set', 'Than', 'Suit')`),
+
+  // Architecture decision AD-22: FK indexes for query performance.
+  index("idx_products_sub_category").on(table.subCategoryId),
+  index("idx_products_shikanja").on(table.shikanjaId),
+]);
 
 export const insertProductSchema = createInsertSchema(productsTable).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertProduct = z.infer<typeof insertProductSchema>;

@@ -1,6 +1,7 @@
-import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, date, numeric, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { purchasePartiesTable } from "./purchase_parties";
 
 export const purchaseBillsTable = pgTable("purchase_bills", {
   id: serial("id").primaryKey(),
@@ -8,62 +9,52 @@ export const purchaseBillsTable = pgTable("purchase_bills", {
   // Planning document Section 3.3: "Har Purchase Bill ka apna unique serial number hoga."
   // Example: PB0001, PB0002, PB0003
   // Stored as text to hold the full formatted serial (prefix + number).
-  // TODO: Planning document does NOT explicitly define a unique constraint on bill_number.
-  // Constraint will be finalized after architecture approval.
-  // TODO: Auto-generation logic (reading from number_series, assigning next number,
-  // updating counter) is business logic — will be implemented after architecture is finalized.
-  billNumber: text("bill_number").notNull(),
+  // Architecture decision AD-18: UNIQUE constraint — no two bills share a number.
+  // Architecture decision AD-09: auto-generation via number_series table (business logic,
+  // implemented in backend phase).
+  billNumber: text("bill_number").notNull().unique(),
 
-  // Planning document Section 3.3 Main Fields: "Bill Date"
-  // TODO: Planning document does NOT define the storage datatype for Bill Date
-  // (date vs timestamp). Datatype will be finalized after architecture approval.
-  billDate: text("bill_date").notNull(),
+  // Architecture decision AD-01: date type. Calendar date only — no time-of-day required.
+  billDate: date("bill_date").notNull(),
 
-  // Planning document Section 3.3 Main Fields: "Purchase Party"
-  // TODO: purchase_party_id foreign key to purchase_parties table will be added after
-  // the complete database relationship architecture is finalized and approved.
+  // Architecture decision AD-13: party FK — NOT NULL, ON DELETE RESTRICT.
+  // Every Purchase Bill must belong to a Purchase Party.
+  // A Purchase Party cannot be deleted while it has bill records.
+  purchasePartyId: integer("purchase_party_id")
+    .notNull()
+    .references(() => purchasePartiesTable.id, { onDelete: "restrict" }),
 
   // Planning document Section 3.3 Main Fields: "Supplier Bill Number"
   supplierBillNumber: text("supplier_bill_number"),
-
-  // Planning document Section 3.3 Main Fields: "Gate Pass Selection"
-  // "Purchase Bill banate waqt user Purchase GP Number select karega."
-  // TODO: Gate pass reference (purchase_gate_pass_id) will be added after the complete
-  // database relationship architecture is finalized and approved.
-  // NOTE: Planning document supports flexible billing — one bill can link to multiple
-  // gate passes and vice versa. This relationship structure will be finalized during
-  // architecture review.
 
   // Planning document Section 3.3 Main Fields: "Lot Number"
   // "Lot Number Purchase GP aur Purchase Bill dono mein common hoga."
   lotNumber: text("lot_number"),
 
   // Planning document Section 3.3 Main Fields: "Bill Amount"
-  // TODO: Planning document does NOT define the datatype for Bill Amount
-  // (numeric precision/scale not specified). Datatype will be finalized after
-  // architecture approval.
+  // Architecture decision AD-03: numeric(12,2) — monetary field.
+  billAmount: numeric("bill_amount", { precision: 12, scale: 2 }),
 
   // Planning document Section 3.3 Main Fields: "Remarks"
   remarks: text("remarks"),
 
-  // Planning document Section 3.3 Main Fields: "Product Details (Auto Load)"
-  // "Gate Pass select karte hi software automatically Product Name, Quantity,
-  // Lot Number load kar dega."
-  // The child table purchase_bill_items already exists. Pending architecture decisions
-  // within that table (product_id FK, quantity datatype, amount fields) will be
-  // finalized after the complete database architecture is approved.
+  // Gate Pass relationship: purchase_gate_passes.purchase_bill_id is the FK side
+  // (AD-16 — Gate Pass stores the bill reference, not the other way around).
+  // To find all Gate Passes linked to this bill: query purchase_gate_passes WHERE purchase_bill_id = this.id
 
   // TODO: Ledger update logic — "Purchase Bill Save hote hi Purchase Party ke Ledger
-  // mein Purchase Amount automatically update ho jayegi." — is business logic and will
-  // be implemented after the Ledger table and architecture are finalized.
-
-  // TODO: Linked Documents (linked Purchase GP serial numbers) will be implemented after
-  // the complete relationship architecture is finalized.
+  // mein Purchase Amount automatically update ho jayegi." — business logic, backend phase.
 
   // Planning document Section 5.4: Har record ke sath Date aur Time automatically save hogi
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+
+}, (table) => [
+  // Architecture decision AD-22: FK indexes for query performance.
+  index("idx_pb_party").on(table.purchasePartyId),
+  // Architecture decision AD-22: date-range index.
+  index("idx_pb_date").on(table.billDate),
+]);
 
 export const insertPurchaseBillSchema = createInsertSchema(purchaseBillsTable).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertPurchaseBill = z.infer<typeof insertPurchaseBillSchema>;

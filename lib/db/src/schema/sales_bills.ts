@@ -1,6 +1,8 @@
-import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, date, numeric, timestamp, index, check } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { salePartiesTable } from "./sale_parties";
 
 export const salesBillsTable = pgTable("sales_bills", {
   id: serial("id").primaryKey(),
@@ -8,64 +10,64 @@ export const salesBillsTable = pgTable("sales_bills", {
   // Planning document Section 3.4: "Har Sales Bill ka apna unique serial number hoga."
   // Example: SB0001, SB0002, SB0003
   // Stored as text to hold the full formatted serial (prefix + number).
-  // TODO: Planning document does NOT explicitly define a unique constraint on bill_number.
-  // Constraint will be finalized after architecture approval.
-  // TODO: Auto-generation logic (reading from number_series, assigning next number,
-  // updating counter) is business logic — will be implemented after architecture is finalized.
-  billNumber: text("bill_number").notNull(),
+  // Architecture decision AD-18: UNIQUE constraint — no two bills share a number.
+  // Architecture decision AD-09: auto-generation via number_series table (business logic,
+  // implemented in backend phase).
+  billNumber: text("bill_number").notNull().unique(),
 
-  // Planning document Section 3.4 Main Fields: "Bill Date"
-  // TODO: Planning document does NOT define the storage datatype for Bill Date
-  // (date vs timestamp). Datatype will be finalized after architecture approval.
-  billDate: text("bill_date").notNull(),
+  // Architecture decision AD-01: date type. Calendar date only — no time-of-day required.
+  billDate: date("bill_date").notNull(),
 
-  // Planning document Section 3.4 Main Fields: "Sale Party"
-  // TODO: sale_party_id foreign key to sale_parties table will be added after the complete
-  // database relationship architecture is finalized and approved.
+  // Architecture decision AD-13: party FK — NOT NULL, ON DELETE RESTRICT.
+  // Every Sales Bill must belong to a Sale Party.
+  // A Sale Party cannot be deleted while it has bill records.
+  salePartyId: integer("sale_party_id")
+    .notNull()
+    .references(() => salePartiesTable.id, { onDelete: "restrict" }),
 
   // Planning document Section 3.4 Main Fields: "Bill Type (Cash / Credit)"
-  // "Bill banate waqt user Bill Type select karega — Cash / Credit."
-  // TODO: Planning document does NOT define the storage format for Bill Type
-  // (enum, plain text, or boolean). Storage format will be finalized after architecture approval.
-
-  // Planning document Section 3.4 Main Fields: "Sale Gate Pass Number"
-  // "User Sale Gate Pass Number select karega. Software automatically us Gate Pass ki
-  // tamam Product Details load kar dega."
-  // TODO: sale_gate_pass_id reference will be added after the complete database
-  // relationship architecture is finalized and approved.
+  // Architecture decision AD-07: stored as text with CHECK constraint.
+  // Allowed values: 'Cash', 'Credit' — exactly as defined in the planning document.
+  // Nullable: bill type selected at entry time.
+  billType: text("bill_type"),
 
   // Planning document Section 3.4 Main Fields: "Cash Payment"
-  // TODO: Planning document does NOT define the datatype for Cash Payment
-  // (numeric precision/scale not specified). Datatype will be finalized after architecture approval.
+  // Architecture decision AD-03: numeric(12,2) — monetary field.
+  // Nullable: only present when cash payment is received at billing.
+  cashPayment: numeric("cash_payment", { precision: 12, scale: 2 }),
 
   // Planning document Section 3.4 Main Fields: "Bank Payment"
-  // TODO: Planning document does NOT define the datatype for Bank Payment
-  // (numeric precision/scale not specified). Datatype will be finalized after architecture approval.
+  // Architecture decision AD-03: numeric(12,2) — monetary field.
+  // Nullable: only present when bank payment is received at billing.
+  bankPayment: numeric("bank_payment", { precision: 12, scale: 2 }),
 
   // Planning document Section 3.4 Main Fields: "Bill Amount"
-  // TODO: Planning document does NOT define the datatype for Bill Amount
-  // (numeric precision/scale not specified). Datatype will be finalized after architecture approval.
+  // Architecture decision AD-03: numeric(12,2) — monetary field.
+  billAmount: numeric("bill_amount", { precision: 12, scale: 2 }),
 
   // Planning document Section 3.4 Main Fields: "Remarks"
   remarks: text("remarks"),
 
-  // Planning document Section 3.4 Main Fields: "Product Details (Auto Load)"
-  // "Gate Pass select karte hi software automatically Product Details load kar dega."
-  // The child table sales_bill_items already exists. Pending architecture decisions
-  // within that table (product_id FK, quantity datatype, amount fields) will be
-  // finalized after the complete database architecture is approved.
+  // Gate Pass relationship: sale_gate_passes.sales_bill_id is the FK side
+  // (AD-16 — Gate Pass stores the bill reference, not the other way around).
+  // To find all Gate Passes linked to this bill: query sale_gate_passes WHERE sales_bill_id = this.id
 
   // TODO: Ledger update logic — "Sales Bill Save hote hi Customer ka Ledger automatically
-  // update ho jayega." — is business logic and will be implemented after the Ledger table
-  // and architecture are finalized.
-
-  // TODO: Linked Documents (linked Sale Gate Pass serial number) will be implemented after
-  // the complete relationship architecture is finalized.
+  // update ho jayega." — business logic, backend phase.
 
   // Planning document Section 5.4: Har record ke sath Date aur Time automatically save hogi
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+
+}, (table) => [
+  // Architecture decision AD-07: bill_type must be one of the two defined bill types.
+  check("sales_bills_bill_type_check", sql`${table.billType} IN ('Cash', 'Credit')`),
+
+  // Architecture decision AD-22: FK indexes for query performance.
+  index("idx_sb_party").on(table.salePartyId),
+  // Architecture decision AD-22: date-range index.
+  index("idx_sb_date").on(table.billDate),
+]);
 
 export const insertSalesBillSchema = createInsertSchema(salesBillsTable).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertSalesBill = z.infer<typeof insertSalesBillSchema>;

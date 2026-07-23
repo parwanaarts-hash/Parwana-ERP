@@ -1,15 +1,27 @@
-import { pgTable, serial, numeric, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, numeric, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { saleGatePassesTable } from "./sale_gate_passes";
+import { productsTable } from "./products";
 
 export const saleGatePassItemsTable = pgTable("sale_gate_pass_items", {
   id: serial("id").primaryKey(),
 
-  // TODO: Parent relationship (sale_gate_pass_id) will be implemented after the
-  // complete database relationship architecture is finalized and approved.
+  // Architecture decision AD-14: parent FK — NOT NULL, ON DELETE CASCADE.
+  // Each item row belongs to exactly one Sale Gate Pass.
+  // Deleting a Sale Gate Pass removes all its item rows.
+  saleGatePassId: integer("sale_gate_pass_id")
+    .notNull()
+    .references(() => saleGatePassesTable.id, { onDelete: "cascade" }),
 
-  // TODO: Product relationship (product_id) will be implemented after the complete
-  // database relationship architecture is finalized and approved.
+  // Architecture decision AD-15: product FK — NOT NULL, ON DELETE RESTRICT.
+  // Each item row references exactly one product from the Products master.
+  // A product cannot be deleted while it has transaction item rows referencing it.
+  // Product name is never stored here — always loaded through this relationship.
+  // UI supports searching by Product Name or Product Code/ID; both resolve to product_id only.
+  productId: integer("product_id")
+    .notNull()
+    .references(() => productsTable.id, { onDelete: "restrict" }),
 
   // Planning document Section 2.3 Main Fields: "Quantity"
   // "User sirf dispatch hone wali actual Quantity enter karega."
@@ -33,14 +45,15 @@ export const saleGatePassItemsTable = pgTable("sale_gate_pass_items", {
   // Architecture decision AD-03: numeric(12,2) — monetary field.
   total: numeric("total", { precision: 12, scale: 2 }),
 
-  // TODO: Stock update logic — "Jese hi Sale Gate Pass Save hoga, software warehouse ke
-  // Stock se utni Quantity automatically minus kar dega." — is business logic and will be
-  // implemented after architecture is finalized.
-
   // Planning document Section 5.4: Har record ke sath Date aur Time automatically save hogi
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+
+}, (table) => [
+  // Architecture decision AD-22: FK indexes for query performance.
+  index("idx_sgp_items_gate_pass").on(table.saleGatePassId),
+  index("idx_sgp_items_product").on(table.productId),
+]);
 
 export const insertSaleGatePassItemSchema = createInsertSchema(saleGatePassItemsTable).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertSaleGatePassItem = z.infer<typeof insertSaleGatePassItemSchema>;
