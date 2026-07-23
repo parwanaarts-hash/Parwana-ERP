@@ -5,7 +5,7 @@ description: PDF se liye gaye register aur master form interface designs — UI 
 
 ## General Style
 
-- **Theme:** Dark background (near-black), light text
+- **Theme:** Light theme (white/light background, dark text) — dark theme explicitly rejected by user
 - **Toolbar pattern (har form mein):** Refresh | Save | Update | Delete | Exit — top mein icon + label
 - **Date:** Top-right corner mein automatically show hoti hai
 - **Language:** Fields ke labels English mein, kuch Urdu (تہان، شکنجہ، جمع، بنام)
@@ -131,7 +131,7 @@ Description | Scale | QTY | Meter | تہان | Rate | Amount | Disc Rate | Disc 
 4. **Balance field** in Sale/Return GP is highlighted (colored text) — shows party balance
 5. **Smart Search** on Party and Product fields (type few letters → dropdown suggestions)
 6. **Toolbar always at top** with icon + text label below icon
-7. **Dark theme throughout** — consistent across all forms
+7. **Light theme throughout** — white/light background, dark text; dark theme NOT to be used
 8. **No Of Bags** field in Sale/Return GP header
 9. **J.V button** in Sale/Return GP toolbar (Journal Voucher)
 10. **"New Party" button** in Sale/Return GP toolbar — quick party creation
