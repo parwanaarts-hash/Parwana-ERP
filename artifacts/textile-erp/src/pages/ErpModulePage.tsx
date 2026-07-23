@@ -56,6 +56,15 @@ const cards: NavCard[] = [
     iconBg: "bg-indigo-100",
     iconColor: "text-indigo-600",
   },
+  {
+    label: "Settings",
+    labelUrdu: "ترتیبات",
+    description: "ERP configuration and preferences.",
+    href: "/erp/settings",
+    icon: Settings,
+    iconBg: "bg-slate-100",
+    iconColor: "text-slate-600",
+  },
 ];
 
 export default function ErpModulePage() {
