@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, timestamp, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -11,11 +11,14 @@ export const categoriesTable = pgTable("categories", {
   // Khaddar, Linen, Marina (under Winter)
   name: text("name").notNull(),
 
-  // TODO: Planning document defines a 2-level hierarchy (Main Category → Sub Categories)
-  // but does NOT explicitly define the implementation of this relationship.
-  // Options include: self-referencing parent_id column, a separate table for each level,
-  // or another approach. The relationship implementation will be added after the complete
-  // database architecture is finalized and approved.
+  // Architecture decision AD-10: self-referencing parent_id for 2-level hierarchy.
+  // NULL = Main Category (Summer, Winter).
+  // Non-null = Sub-Category (Lawn, Cotton, Khaddar, etc.) — points to its Main Category.
+  // ON DELETE RESTRICT: a Main Category cannot be deleted while it has Sub-Categories.
+  // Prevents Sub-Categories from being silently orphaned or incorrectly promoted.
+  // Callback form required for self-referencing FK (lazy evaluation — prevents
+  // TypeScript variable-before-declaration error).
+  parentId: integer("parent_id").references((): AnyPgColumn => categoriesTable.id, { onDelete: "restrict" }),
 
   // Planning document Section 5.4: Har record ke sath Date aur Time automatically save hogi
   createdAt: timestamp("created_at").defaultNow().notNull(),

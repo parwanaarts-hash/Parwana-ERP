@@ -1,6 +1,8 @@
-import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { categoriesTable } from "./categories";
+import { shikanjaTable } from "./shikanja";
 
 export const productsTable = pgTable("products", {
   id: serial("id").primaryKey(),
@@ -15,15 +17,23 @@ export const productsTable = pgTable("products", {
 
   // Planning document Section 2.1: "Product save karte waqt uska Type select karna lazmi hoga"
   // Defined types: Set, Than, Suit
-  // TODO: Planning document does NOT define whether type should be constrained (enum) or
-  // stored as plain text. Storage format will be finalized after architecture approval.
+  // Architecture decision AD-04: stored as text. CHECK constraint ('Set','Than','Suit')
+  // will be added during schema finalization.
+  // TODO: CHECK constraint to be applied in schema finalization phase.
   type: text("type").notNull(),
 
-  // TODO: sub_category_id field will be added after the Categories table is created
-  // and its complete database relationship is finalized and approved.
+  // Architecture decision AD-11: sub_category_id FK to categories table.
+  // Links product to a Sub-Category row (parent_id IS NOT NULL in categories).
+  // Application layer enforces that only Sub-Categories are selectable in the dropdown.
+  // Nullable: planning document does not mandate category assignment at product creation.
+  // ON DELETE RESTRICT: a Sub-Category cannot be deleted while products are assigned to it.
+  subCategoryId: integer("sub_category_id").references(() => categoriesTable.id, { onDelete: "restrict" }),
 
-  // TODO: shikanja_id field will be added after the Shikanja table is created
-  // and its complete database relationship is finalized and approved.
+  // Architecture decision AD-12: shikanja_id FK to shikanja table.
+  // Planning document: "Product create karte waqt Shikanja dropdown se select kiya jayega."
+  // Nullable: planning document does not mandate shikanja assignment at product creation.
+  // ON DELETE RESTRICT: a Shikanja cannot be deleted while products are assigned to it.
+  shikanjaId: integer("shikanja_id").references(() => shikanjaTable.id, { onDelete: "restrict" }),
 
   // Planning document Section 5.4: Har record ke sath Date aur Time automatically save hogi
   createdAt: timestamp("created_at").defaultNow().notNull(),
