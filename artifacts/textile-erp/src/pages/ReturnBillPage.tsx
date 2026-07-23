@@ -1,47 +1,291 @@
-import { PageShell } from "@/components/layout/PageShell";
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Header } from "@/components/layout/Header";
+import { Breadcrumb } from "@/components/layout/Breadcrumb";
+import { Toolbar } from "@/components/layout/Toolbar";
+import { EntityTable } from "@/components/master/EntityTable";
+import { PaginationFooter } from "@/components/master/PaginationFooter";
+import { ConfirmDeleteDialog } from "@/components/master/ConfirmDeleteDialog";
+import { useMasterData } from "@/hooks/useMasterData";
+import { useToast } from "@/hooks/use-toast";
+import { ReturnBillForm } from "@/components/master/forms/ReturnBillForm";
+import {
+  useListReturnBills,
+  useGetReturnBill,
+  useCreateReturnBill,
+  useUpdateReturnBill,
+  useDeleteReturnBill,
+  useListSaleParties,
+  useListReturnGatePasses,
+  useListProducts,
+  getListReturnBillsQueryKey,
+  getGetReturnBillQueryKey,
+  ReturnBillInput,
+  ReturnBill,
+} from "@workspace/api-client-react";
+import { Loader2 } from "lucide-react";
 
 export default function ReturnBillPage() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const {
+    page, setPage, pageSize,
+    selectedId, mode, startAdd, startEdit, exitForm,
+  } = useMasterData();
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  // ── Queries ───────────────────────────────────────────────────────────────
+  const { data, isLoading, refetch } = useListReturnBills({
+    limit: pageSize,
+    offset: page * pageSize,
+  });
+
+  const { data: fullRecord, isLoading: isLoadingRecord } = useGetReturnBill(
+    selectedId ?? 0,
+    {
+      query: {
+        queryKey: getGetReturnBillQueryKey(selectedId ?? 0),
+        enabled: mode === "edit" && selectedId !== null,
+      },
+    }
+  );
+
+  const { data: partiesData } = useListSaleParties({ limit: 200 });
+  const { data: productsData } = useListProducts({ limit: 200 });
+  const { data: allGatePassesData } = useListReturnGatePasses({ limit: 500 });
+
+  // ── Mutations ─────────────────────────────────────────────────────────────
+  const createBill = useCreateReturnBill();
+  const updateBill = useUpdateReturnBill();
+  const deleteBill = useDeleteReturnBill();
+
+  // id→name map for list view
+  const partyMap: Record<number, string> = Object.fromEntries(
+    (partiesData?.rows ?? []).map((p) => [p.id, p.name])
+  );
+
+  // Gate passes available for the form selector:
+  // Add mode  → only unlinked (returnBillId == null)
+  // Edit mode → unlinked + those already linked to this bill
+  const allGatePasses = allGatePassesData?.rows ?? [];
+  const availableGatePasses =
+    mode === "edit" && selectedId
+      ? allGatePasses.filter(
+          (gp) => gp.returnBillId == null || gp.returnBillId === selectedId
+        )
+      : allGatePasses.filter((gp) => gp.returnBillId == null);
+
+  // ── Keyboard shortcuts ────────────────────────────────────────────────────
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      const isTyping = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+
+      if (e.key === "F2") {
+        e.preventDefault();
+        startAdd();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        handleSave();
+      } else if (e.key === "Delete" && !isTyping && selectedId && mode === "idle") {
+        e.preventDefault();
+        setIsDeleteDialogOpen(true);
+      } else if (e.key === "Escape" && !isTyping) {
+        e.preventDefault();
+        exitForm();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedId, mode, startAdd, exitForm]);
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: getListReturnBillsQueryKey() });
+    refetch();
+    exitForm();
+  };
+
+  const handleSave = () => {
+    const form = document.getElementById("entity-form") as HTMLFormElement | null;
+    if (form) form.requestSubmit();
+  };
+
+  const onSubmit = (formData: ReturnBillInput) => {
+    if (mode === "add") {
+      createBill.mutate({ data: formData }, {
+        onSuccess: () => {
+          toast({ title: "Success", description: "Return Bill created." });
+          queryClient.invalidateQueries({ queryKey: getListReturnBillsQueryKey() });
+          exitForm();
+        },
+        onError: (err: any) => {
+          toast({
+            title: "Error",
+            description: err?.message ?? "Failed to create return bill.",
+            variant: "destructive",
+          });
+        },
+      });
+    } else if (mode === "edit" && selectedId) {
+      updateBill.mutate({ id: selectedId, data: formData }, {
+        onSuccess: () => {
+          toast({ title: "Success", description: "Return Bill updated." });
+          queryClient.invalidateQueries({ queryKey: getListReturnBillsQueryKey() });
+          exitForm();
+        },
+        onError: (err: any) => {
+          toast({
+            title: "Error",
+            description: err?.message ?? "Failed to update return bill.",
+            variant: "destructive",
+          });
+        },
+      });
+    }
+  };
+
+  const handleDelete = () => {
+    if (!selectedId) return;
+    deleteBill.mutate({ id: selectedId }, {
+      onSuccess: () => {
+        toast({ title: "Success", description: "Return Bill deleted." });
+        queryClient.invalidateQueries({ queryKey: getListReturnBillsQueryKey() });
+        setIsDeleteDialogOpen(false);
+        exitForm();
+      },
+      onError: (err: any) => {
+        toast({
+          title: "Error",
+          description: err?.message ?? "Failed to delete return bill.",
+          variant: "destructive",
+        });
+        setIsDeleteDialogOpen(false);
+      },
+    });
+  };
+
+  const isSaving = createBill.isPending || updateBill.isPending;
+  const isDeleting = deleteBill.isPending;
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <PageShell 
-      title="Return Bill" 
-      breadcrumb={["Stock","Returns","Bill"]}
+    <div
+      className="flex flex-col h-full w-full bg-background"
+      data-testid="page-return-bill"
     >
-      <div className="flex-1 overflow-auto border-b" data-testid="container-grid-returnbillpage">
-        <table className="w-full text-sm text-left whitespace-nowrap">
-          <thead className="bg-muted/50 text-muted-foreground sticky top-0 z-10 shadow-sm">
-            <tr>
-              <th className="px-4 py-3 font-medium border-b">Bill#</th>
-              <th className="px-4 py-3 font-medium border-b">Date</th>
-              <th className="px-4 py-3 font-medium border-b">Party</th>
-              <th className="px-4 py-3 font-medium border-b">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colSpan={4} className="px-4 py-12 text-center text-muted-foreground" data-testid="text-empty-grid">
-                No records found.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div className="p-4 bg-muted/10 shrink-0 border-t" data-testid="container-form-returnbillpage">
-        <h3 className="font-semibold text-sm mb-4">Entry Form Placeholder</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium leading-none">Date</label>
-            <input type="date" className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" data-testid="input-form-date" />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium leading-none">Bill Reference</label>
-            <input placeholder="Auto-generated" className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" data-testid="input-form-ref" />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium leading-none">Remarks</label>
-            <input placeholder="Details..." className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" data-testid="input-form-remarks" />
-          </div>
+      <Header title="Return Bill" />
+
+      <div className="flex-1 overflow-auto p-4 flex flex-col gap-4">
+        <Breadcrumb items={["ERP", "Return", "Return Bill"]} />
+
+        {/* Toolbar */}
+        <Toolbar
+          onRefresh={handleRefresh}
+          onSave={mode === "add" ? handleSave : undefined}
+          onUpdate={mode === "edit" ? handleSave : undefined}
+          onDelete={() => setIsDeleteDialogOpen(true)}
+          onExit={exitForm}
+          canSave={mode === "add"}
+          canUpdate={mode === "edit"}
+          canDelete={!!selectedId && mode === "idle"}
+          isSaving={isSaving}
+          isDeleting={isDeleting}
+        />
+
+        {/* Shortcut hints */}
+        <div className="flex items-center gap-4 text-xs text-muted-foreground px-1">
+          <span><kbd className="px-1 py-0.5 bg-muted border rounded text-xs">F2</kbd> New</span>
+          <span><kbd className="px-1 py-0.5 bg-muted border rounded text-xs">Ctrl+S</kbd> Save</span>
+          <span><kbd className="px-1 py-0.5 bg-muted border rounded text-xs">Del</kbd> Delete</span>
+          <span><kbd className="px-1 py-0.5 bg-muted border rounded text-xs">Esc</kbd> Exit</span>
         </div>
+
+        {/* List Table */}
+        <EntityTable
+          columns={[
+            { key: "billNumber", label: "Bill No", width: "110px" },
+            { key: "billDate", label: "Date", width: "110px" },
+            {
+              key: "salePartyId",
+              label: "Sale Party",
+              render: (row: ReturnBill) =>
+                partyMap[row.salePartyId] ?? `#${row.salePartyId}`,
+            },
+            {
+              key: "remarks",
+              label: "Remarks",
+              render: (row: ReturnBill) => row.remarks ?? "—",
+            },
+            {
+              key: "gatePassIds",
+              label: "Linked Gate Passes",
+              width: "145px",
+              render: (row: ReturnBill) =>
+                row.gatePassIds && row.gatePassIds.length > 0
+                  ? `${row.gatePassIds.length} gate pass${row.gatePassIds.length > 1 ? "es" : ""}`
+                  : "—",
+            },
+          ]}
+          rows={data?.rows ?? []}
+          total={data?.total ?? 0}
+          isLoading={isLoading}
+          selectedId={selectedId}
+          onRowClick={(row) => startEdit(row.id)}
+          emptyMessage="No return bills found. Press F2 to create the first one."
+        />
+
+        <PaginationFooter
+          page={page}
+          pageSize={pageSize}
+          total={data?.total ?? 0}
+          onPageChange={setPage}
+        />
+
+        {/* Form Section */}
+        {(mode === "add" || mode === "edit") && (
+          <div
+            className="bg-card border rounded-md p-4 shadow-sm shrink-0"
+            data-testid="container-form-section"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <h3 className="font-semibold text-base">
+                {mode === "add" ? "New Return Bill" : "Edit Return Bill"}
+              </h3>
+              {mode === "edit" && isLoadingRecord && (
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              )}
+            </div>
+
+            {mode === "edit" && isLoadingRecord ? (
+              <div className="flex items-center justify-center py-12 text-muted-foreground gap-2">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span className="text-sm">Loading record...</span>
+              </div>
+            ) : (
+              <ReturnBillForm
+                billNumber={mode === "edit" ? fullRecord?.billNumber : undefined}
+                initialData={mode === "edit" ? fullRecord : undefined}
+                saleParties={partiesData?.rows ?? []}
+                availableGatePasses={availableGatePasses}
+                products={productsData?.rows ?? []}
+                onSubmit={onSubmit}
+              />
+            )}
+          </div>
+        )}
       </div>
-    </PageShell>
+
+      {/* Delete confirmation */}
+      <ConfirmDeleteDialog
+        open={isDeleteDialogOpen}
+        onCancel={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleDelete}
+        isDeleting={isDeleting}
+        entityName="return bill"
+      />
+    </div>
   );
 }
