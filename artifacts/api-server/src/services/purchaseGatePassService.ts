@@ -23,7 +23,7 @@
  *     (OUT entries), never by deleting existing stock ledger rows.
  */
 
-import { eq, desc, and, gte, lte, asc } from "drizzle-orm";
+import { eq, desc, and, gte, lte, asc, isNull, count } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   purchaseGatePassesTable,
@@ -739,7 +739,7 @@ export async function getPurchaseGatePassByNumber(
  */
 export async function listPurchaseGatePasses(
   input: ListPurchaseGatePassesInput = {}
-): Promise<PurchaseGatePassRow[]> {
+): Promise<{ rows: PurchaseGatePassRow[]; total: number }> {
   const limit  = input.limit  ?? 50;
   const offset = input.offset ?? 0;
 
@@ -761,24 +761,29 @@ export async function listPurchaseGatePasses(
 
   if (input.unlinkedOnly === true) {
     // Gate passes not yet linked to any Purchase Bill.
-    conditions.push(
-      eq(purchaseGatePassesTable.purchaseBillId, null as unknown as number)
-    );
+    // Must use isNull() — SQL `= NULL` never matches; only `IS NULL` does.
+    conditions.push(isNull(purchaseGatePassesTable.purchaseBillId));
   }
 
-  const query = db
-    .select()
-    .from(purchaseGatePassesTable)
-    .orderBy(
-      desc(purchaseGatePassesTable.date),
-      desc(purchaseGatePassesTable.id)
-    )
-    .limit(limit)
-    .offset(offset);
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-  if (conditions.length > 0) {
-    return query.where(and(...conditions));
-  }
+  const [countResult, rows] = await Promise.all([
+    db
+      .select({ total: count() })
+      .from(purchaseGatePassesTable)
+      .where(where)
+      .then((r) => r[0]?.total ?? 0),
+    db
+      .select()
+      .from(purchaseGatePassesTable)
+      .where(where)
+      .orderBy(
+        desc(purchaseGatePassesTable.date),
+        desc(purchaseGatePassesTable.id)
+      )
+      .limit(limit)
+      .offset(offset),
+  ]);
 
-  return query;
+  return { rows, total: countResult };
 }

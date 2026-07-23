@@ -24,6 +24,7 @@ import {
   updatePurchaseBill,
   deletePurchaseBill,
   getPurchaseBill,
+  getPurchaseBillByNumber,
   listPurchaseBills,
 } from "../services/purchaseBillService";
 
@@ -60,6 +61,24 @@ const ListQuery = z.object({
   limit:           z.coerce.number().int().positive().max(500).optional(),
   offset:          z.coerce.number().int().min(0).optional(),
 });
+
+// ---------------------------------------------------------------------------
+// GET /number/:billNumber  — get by document number (must precede /:id)
+// ---------------------------------------------------------------------------
+
+router.get(
+  "/number/:billNumber",
+  asyncHandler(async (req, res) => {
+    const billNumber = String(req.params.billNumber);
+    const result = await getPurchaseBillByNumber(billNumber);
+
+    if (result === null) {
+      throw new ApiError(404, `Purchase Bill not found: billNumber=${billNumber}`, "PurchaseBillNotFoundError");
+    }
+
+    res.json(result);
+  })
+);
 
 // ---------------------------------------------------------------------------
 // GET /  — list

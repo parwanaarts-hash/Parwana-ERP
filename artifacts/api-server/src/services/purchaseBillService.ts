@@ -26,7 +26,7 @@
  *     or its gate pass selection changes.
  */
 
-import { eq, desc, and, gte, lte, asc, isNull, inArray } from "drizzle-orm";
+import { eq, desc, and, gte, lte, asc, isNull, inArray, count } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   purchaseBillsTable,
@@ -962,7 +962,7 @@ export async function getPurchaseBillByNumber(
  */
 export async function listPurchaseBills(
   input: ListPurchaseBillsInput = {}
-): Promise<PurchaseBillRow[]> {
+): Promise<{ rows: PurchaseBillRow[]; total: number }> {
   const limit  = input.limit  ?? 50;
   const offset = input.offset ?? 0;
 
@@ -982,19 +982,25 @@ export async function listPurchaseBills(
     conditions.push(lte(purchaseBillsTable.billDate, input.toDate));
   }
 
-  const query = db
-    .select()
-    .from(purchaseBillsTable)
-    .orderBy(
-      desc(purchaseBillsTable.billDate),
-      desc(purchaseBillsTable.id)
-    )
-    .limit(limit)
-    .offset(offset);
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-  if (conditions.length > 0) {
-    return query.where(and(...conditions));
-  }
+  const [countResult, rows] = await Promise.all([
+    db
+      .select({ total: count() })
+      .from(purchaseBillsTable)
+      .where(where)
+      .then((r) => r[0]?.total ?? 0),
+    db
+      .select()
+      .from(purchaseBillsTable)
+      .where(where)
+      .orderBy(
+        desc(purchaseBillsTable.billDate),
+        desc(purchaseBillsTable.id)
+      )
+      .limit(limit)
+      .offset(offset),
+  ]);
 
-  return query;
+  return { rows, total: countResult };
 }

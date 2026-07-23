@@ -24,6 +24,7 @@ import {
   updatePurchaseGatePass,
   deletePurchaseGatePass,
   getPurchaseGatePass,
+  getPurchaseGatePassByNumber,
   listPurchaseGatePasses,
   type PurchaseGatePassItemInput,
 } from "../services/purchaseGatePassService";
@@ -66,6 +67,24 @@ const ListQuery = z.object({
   limit:           z.coerce.number().int().positive().max(500).optional(),
   offset:          z.coerce.number().int().min(0).optional(),
 });
+
+// ---------------------------------------------------------------------------
+// GET /number/:gpNumber  — get by document number (must precede /:id)
+// ---------------------------------------------------------------------------
+
+router.get(
+  "/number/:gpNumber",
+  asyncHandler(async (req, res) => {
+    const gpNumber = String(req.params.gpNumber);
+    const result = await getPurchaseGatePassByNumber(gpNumber);
+
+    if (result === null) {
+      throw new ApiError(404, `Purchase Gate Pass not found: gpNumber=${gpNumber}`, "PurchaseGatePassNotFoundError");
+    }
+
+    res.json(result);
+  })
+);
 
 // ---------------------------------------------------------------------------
 // GET /  — list
