@@ -1,4 +1,4 @@
-import { pgTable, serial, text, numeric, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, numeric, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -10,10 +10,6 @@ export const saleGatePassItemsTable = pgTable("sale_gate_pass_items", {
 
   // TODO: Product relationship (product_id) will be implemented after the complete
   // database relationship architecture is finalized and approved.
-
-  // Planning document Section 2.3 Main Fields: "Product" — item name/description.
-  // Text field preserving the item description at time of entry.
-  item: text("item"),
 
   // Planning document Section 2.3 Main Fields: "Quantity"
   // "User sirf dispatch hone wali actual Quantity enter karega."

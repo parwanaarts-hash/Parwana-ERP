@@ -1,4 +1,4 @@
-import { pgTable, serial, text, numeric, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, numeric, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -10,11 +10,6 @@ export const returnBillItemsTable = pgTable("return_bill_items", {
 
   // TODO: Product relationship (product_id) will be implemented after the complete
   // database relationship architecture is finalized and approved.
-
-  // Planning document Section 3.5: "Product" — item name/description.
-  // Auto-loaded from Return Gate Pass. Text field preserving the item description
-  // at time of billing.
-  item: text("item"),
 
   // Planning document Section 3.5: quantity auto-loaded from Return Gate Pass.
   // Architecture decision AD-02: numeric(10,3) — covers whole units (Set/Suit)
