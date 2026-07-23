@@ -7,6 +7,7 @@ import saleGatePassesRouter from "./saleGatePasses";
 import salesBillsRouter from "./salesBills";
 import paymentReceivesRouter from "./paymentReceives";
 import returnGatePassesRouter from "./returnGatePasses";
+import returnBillsRouter from "./returnBills";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use("/sale-gate-passes", saleGatePassesRouter);
 router.use("/sales-bills", salesBillsRouter);
 router.use("/payment-receives", paymentReceivesRouter);
 router.use("/return-gate-passes", returnGatePassesRouter);
+router.use("/return-bills", returnBillsRouter);
 
 export default router;
