@@ -1,31 +1,63 @@
-import { PageShell } from "@/components/layout/PageShell";
+import { ClipboardList, ClipboardCheck, RotateCcw, Wallet, CreditCard } from "lucide-react";
+import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/DashboardLayout";
+
+const cards: NavCard[] = [
+  {
+    label: "Purchase Register",
+    labelUrdu: "خریداری رجسٹر",
+    description: "All purchase bills and summary.",
+    icon: ClipboardList,
+    iconBg: "bg-green-100",
+    iconColor: "text-green-600",
+    comingSoon: true,
+  },
+  {
+    label: "Sales Register",
+    labelUrdu: "فروخت رجسٹر",
+    description: "All sales bills and summary.",
+    icon: ClipboardCheck,
+    iconBg: "bg-orange-100",
+    iconColor: "text-orange-600",
+    comingSoon: true,
+  },
+  {
+    label: "Return Register",
+    labelUrdu: "واپسی رجسٹر",
+    description: "All return bills and summary.",
+    icon: RotateCcw,
+    iconBg: "bg-rose-100",
+    iconColor: "text-rose-600",
+    comingSoon: true,
+  },
+  {
+    label: "Payment Receive Register",
+    labelUrdu: "وصولی رجسٹر",
+    description: "All incoming payments register.",
+    icon: Wallet,
+    iconBg: "bg-amber-100",
+    iconColor: "text-amber-600",
+    comingSoon: true,
+  },
+  {
+    label: "Payment Paid Register",
+    labelUrdu: "ادائیگی رجسٹر",
+    description: "All outgoing payments register.",
+    icon: CreditCard,
+    iconBg: "bg-indigo-100",
+    iconColor: "text-indigo-600",
+    comingSoon: true,
+  },
+];
 
 export default function ErpReportsPage() {
   return (
-    <PageShell 
-      title="ERP Reports" 
-      breadcrumb={["ERP","Reports"]}
+    <DashboardLayout
+      title="Reports"
+      titleUrdu="رپورٹس"
+      subtitle="ERP reports and registers"
+      back={{ href: "/erp", label: "ERP Module" }}
     >
-      <div className="flex-1 overflow-auto border-b" data-testid="container-grid-erpreportspage">
-        <table className="w-full text-sm text-left whitespace-nowrap">
-          <thead className="bg-muted/50 text-muted-foreground sticky top-0 z-10 shadow-sm">
-            <tr>
-              <th className="px-4 py-3 font-medium border-b">ID</th>
-              <th className="px-4 py-3 font-medium border-b">Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colSpan={2} className="px-4 py-12 text-center text-muted-foreground" data-testid="text-empty-grid">
-                No records found.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div className="p-4 bg-muted/10 shrink-0 border-t text-center text-muted-foreground text-sm" data-testid="container-form-erpreportspage">
-        Report view — read-only data display
-      </div>
-    </PageShell>
+      <CardGrid cards={cards} columns="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5" />
+    </DashboardLayout>
   );
 }

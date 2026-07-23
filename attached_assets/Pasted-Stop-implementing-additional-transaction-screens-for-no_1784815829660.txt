@@ -1,0 +1,135 @@
+Stop implementing additional transaction screens for now.
+
+We have finalized a new application navigation architecture. Before continuing, refactor the frontend to follow this structure.
+
+IMPORTANT:
+Do NOT change the backend.
+Do NOT change any APIs.
+Do NOT change database schema.
+Do NOT change business logic.
+Only refactor frontend navigation and page organization.
+
+==================================================
+HOME
+==================================================
+
+Show only large dashboard cards:
+
+- Stock Module
+- ERP Module
+- Settings
+
+No long sidebar navigation.
+
+==================================================
+STOCK MODULE
+==================================================
+
+Display dashboard cards only.
+
+Purchase
+- Purchase Gate Pass
+
+Sales
+- Sale Gate Pass
+
+Return
+- Return Gate Pass
+
+Add
+- Products
+- Categories
+- Shikanja
+- Purchase Parties
+- Sale Parties
+
+Reports
+- Stock List
+- Product Ledger
+- Purchase Gate Pass Register
+- Sale Gate Pass Register
+- Return Gate Pass Register
+
+Settings
+
+==================================================
+ERP MODULE
+==================================================
+
+Display dashboard cards only.
+
+Purchase
+- Purchase Bill
+- Payment Paid
+
+Sales
+- Sales Bill
+- Payment Receive
+
+Return
+- Return Bill
+
+Accounts
+- Party Ledger
+- Customer Ledger
+- Supplier Ledger
+
+Reports
+- Purchase Register
+- Sales Register
+- Return Register
+- Payment Receive Register
+- Payment Paid Register
+
+Settings
+
+==================================================
+NAVIGATION
+==================================================
+
+Navigation flow must be:
+
+Home
+→ Module
+→ Section
+→ Screen
+
+Example:
+
+Home
+→ Stock Module
+→ Purchase
+→ Purchase Gate Pass
+
+or
+
+Home
+→ ERP Module
+→ Sales
+→ Sales Bill
+
+==================================================
+UI
+==================================================
+
+- Large modern cards
+- Professional ERP dashboard
+- Light theme only
+- Bilingual titles where already used
+- Keep breadcrumb
+- Keep toolbar
+- Keep keyboard shortcuts
+- Keep all existing CRUD pages exactly as they are
+
+Only replace the navigation system.
+
+Do NOT redesign the Purchase Gate Pass form.
+
+It must continue working exactly as before.
+
+When complete:
+
+- Run TypeScript typecheck.
+- Fix all errors.
+- Verify all routes still work.
+- Provide only a concise implementation report.

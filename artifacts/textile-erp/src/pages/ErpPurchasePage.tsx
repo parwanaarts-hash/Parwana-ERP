@@ -1,37 +1,36 @@
-import { PageShell } from "@/components/layout/PageShell";
+import { Receipt, CreditCard } from "lucide-react";
+import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/DashboardLayout";
+
+const cards: NavCard[] = [
+  {
+    label: "Purchase Bill",
+    labelUrdu: "خریداری بل",
+    description: "Create and manage purchase bills linked to gate passes.",
+    href: "/stock/purchase/bills",
+    icon: Receipt,
+    iconBg: "bg-green-100",
+    iconColor: "text-green-600",
+  },
+  {
+    label: "Payment Paid",
+    labelUrdu: "ادائیگی",
+    description: "Record payments made to purchase parties.",
+    href: "/stock/purchase/payments",
+    icon: CreditCard,
+    iconBg: "bg-emerald-100",
+    iconColor: "text-emerald-600",
+  },
+];
 
 export default function ErpPurchasePage() {
   return (
-    <PageShell 
-      title="ERP Purchase" 
-      breadcrumb={["ERP","Purchase"]}
+    <DashboardLayout
+      title="Purchase"
+      titleUrdu="خریداری"
+      subtitle="Select a screen to continue"
+      back={{ href: "/erp", label: "ERP Module" }}
     >
-      <div className="flex-1 overflow-auto border-b" data-testid="container-grid-erppurchasepage">
-        <table className="w-full text-sm text-left whitespace-nowrap">
-          <thead className="bg-muted/50 text-muted-foreground sticky top-0 z-10 shadow-sm">
-            <tr>
-              <th className="px-4 py-3 font-medium border-b">ID</th>
-              <th className="px-4 py-3 font-medium border-b">Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colSpan={2} className="px-4 py-12 text-center text-muted-foreground" data-testid="text-empty-grid">
-                No records found.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div className="p-4 bg-muted/10 shrink-0 border-t" data-testid="container-form-erppurchasepage">
-        <h3 className="font-semibold text-sm mb-4">Entry Form Placeholder</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium leading-none">Reference</label>
-            <input placeholder="ERP reference" className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" data-testid="input-form-ref" />
-          </div>
-        </div>
-      </div>
-    </PageShell>
+      <CardGrid cards={cards} columns="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5" />
+    </DashboardLayout>
   );
 }
