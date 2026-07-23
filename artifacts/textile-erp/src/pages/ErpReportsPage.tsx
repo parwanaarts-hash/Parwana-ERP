@@ -1,4 +1,4 @@
-import { ClipboardList, ClipboardCheck, RotateCcw, Wallet, CreditCard } from "lucide-react";
+import { ClipboardList, ClipboardCheck, RotateCcw, CreditCard, Wallet } from "lucide-react";
 import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/DashboardLayout";
 
 const cards: NavCard[] = [
@@ -30,19 +30,19 @@ const cards: NavCard[] = [
     comingSoon: true,
   },
   {
-    label: "Payment Receive Register",
-    labelUrdu: "وصولی رجسٹر",
-    description: "All incoming payments register.",
-    icon: Wallet,
-    iconBg: "bg-amber-100",
-    iconColor: "text-amber-600",
-    comingSoon: true,
-  },
-  {
     label: "Payment Paid Register",
     labelUrdu: "ادائیگی رجسٹر",
     description: "All outgoing payments register.",
     icon: CreditCard,
+    iconBg: "bg-blue-100",
+    iconColor: "text-blue-600",
+    comingSoon: true,
+  },
+  {
+    label: "Payment Receive Register",
+    labelUrdu: "وصولی رجسٹر",
+    description: "All incoming payments register.",
+    icon: Wallet,
     iconBg: "bg-indigo-100",
     iconColor: "text-indigo-600",
     comingSoon: true,

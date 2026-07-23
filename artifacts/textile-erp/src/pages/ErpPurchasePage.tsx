@@ -1,4 +1,4 @@
-import { Receipt, CreditCard } from "lucide-react";
+import { Receipt } from "lucide-react";
 import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/DashboardLayout";
 
 const cards: NavCard[] = [
@@ -10,15 +10,6 @@ const cards: NavCard[] = [
     icon: Receipt,
     iconBg: "bg-green-100",
     iconColor: "text-green-600",
-  },
-  {
-    label: "Payment Paid",
-    labelUrdu: "ادائیگی",
-    description: "Record payments made to purchase parties.",
-    href: "/stock/purchase/payments",
-    icon: CreditCard,
-    iconBg: "bg-emerald-100",
-    iconColor: "text-emerald-600",
   },
 ];
 

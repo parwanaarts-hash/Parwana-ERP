@@ -1,11 +1,11 @@
-import { ArrowRightLeft, TrendingDown, RotateCcw, BookOpen, FileText, Settings } from "lucide-react";
+import { ArrowRightLeft, TrendingDown, CreditCard, RotateCcw, BookOpen, FileText, Settings } from "lucide-react";
 import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/DashboardLayout";
 
 const cards: NavCard[] = [
   {
     label: "Purchase",
     labelUrdu: "خریداری",
-    description: "Purchase bills and payment paid entries.",
+    description: "Purchase bills entry and management.",
     href: "/erp/purchase",
     icon: ArrowRightLeft,
     iconBg: "bg-green-100",
@@ -14,11 +14,20 @@ const cards: NavCard[] = [
   {
     label: "Sales",
     labelUrdu: "فروخت",
-    description: "Sales bills and payment receive entries.",
+    description: "Sales bills entry and management.",
     href: "/erp/sales",
     icon: TrendingDown,
     iconBg: "bg-orange-100",
     iconColor: "text-orange-600",
+  },
+  {
+    label: "Payments",
+    labelUrdu: "ادائیگیاں",
+    description: "Payment paid and payment receive entries.",
+    href: "/erp/payments",
+    icon: CreditCard,
+    iconBg: "bg-blue-100",
+    iconColor: "text-blue-600",
   },
   {
     label: "Return",
@@ -30,10 +39,10 @@ const cards: NavCard[] = [
     iconColor: "text-rose-600",
   },
   {
-    label: "Accounts",
-    labelUrdu: "حسابات",
-    description: "Party, customer and supplier ledgers.",
-    href: "/erp/accounts",
+    label: "Ledgers",
+    labelUrdu: "لیجرز",
+    description: "Purchase party and sale party ledgers.",
+    href: "/erp/ledgers",
     icon: BookOpen,
     iconBg: "bg-amber-100",
     iconColor: "text-amber-600",
@@ -46,15 +55,6 @@ const cards: NavCard[] = [
     icon: FileText,
     iconBg: "bg-indigo-100",
     iconColor: "text-indigo-600",
-  },
-  {
-    label: "Settings",
-    labelUrdu: "ترتیبات",
-    description: "ERP configuration and preferences.",
-    href: "/erp/settings",
-    icon: Settings,
-    iconBg: "bg-slate-100",
-    iconColor: "text-slate-600",
   },
 ];
 

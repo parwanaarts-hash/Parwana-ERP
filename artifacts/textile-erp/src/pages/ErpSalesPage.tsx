@@ -1,4 +1,4 @@
-import { FileText, Wallet } from "lucide-react";
+import { FileText } from "lucide-react";
 import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/DashboardLayout";
 
 const cards: NavCard[] = [
@@ -10,15 +10,6 @@ const cards: NavCard[] = [
     icon: FileText,
     iconBg: "bg-orange-100",
     iconColor: "text-orange-600",
-  },
-  {
-    label: "Payment Receive",
-    labelUrdu: "وصولی",
-    description: "Record payments received from sale parties.",
-    href: "/stock/sales/payments",
-    icon: Wallet,
-    iconBg: "bg-amber-100",
-    iconColor: "text-amber-600",
   },
 ];
 

@@ -18,6 +18,7 @@ import StockReportsSectionPage  from '@/pages/StockReportsSectionPage';
 import ErpModulePage            from '@/pages/ErpModulePage';
 import ErpPurchasePage          from '@/pages/ErpPurchasePage';
 import ErpSalesPage             from '@/pages/ErpSalesPage';
+import ErpPaymentsSectionPage   from '@/pages/ErpPaymentsSectionPage';
 import ErpReturnSectionPage     from '@/pages/ErpReturnSectionPage';
 import ErpAccountsSectionPage   from '@/pages/ErpAccountsSectionPage';
 import ErpReportsPage           from '@/pages/ErpReportsPage';
@@ -65,8 +66,9 @@ function Router() {
       <Route path="/erp"              component={ErpModulePage} />
       <Route path="/erp/purchase"     component={ErpPurchasePage} />
       <Route path="/erp/sales"        component={ErpSalesPage} />
+      <Route path="/erp/payments"     component={ErpPaymentsSectionPage} />
       <Route path="/erp/return"       component={ErpReturnSectionPage} />
-      <Route path="/erp/accounts"     component={ErpAccountsSectionPage} />
+      <Route path="/erp/ledgers"      component={ErpAccountsSectionPage} />
       <Route path="/erp/reports"      component={ErpReportsPage} />
       <Route path="/erp/settings"     component={ErpSettingsPage} />
 
