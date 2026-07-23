@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/layout/Header";
 import { Breadcrumb } from "@/components/layout/Breadcrumb";
@@ -34,6 +34,12 @@ export default function PurchaseGatePassPage() {
   } = useMasterData();
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isFormDirty, setIsFormDirty] = useState(false);
+
+  // Reset dirty flag whenever form closes
+  useEffect(() => {
+    if (mode === "idle") setIsFormDirty(false);
+  }, [mode]);
 
   // ── Queries ───────────────────────────────────────────────────────────────
   const { data, isLoading, refetch } = useListPurchaseGatePasses({
@@ -41,7 +47,6 @@ export default function PurchaseGatePassPage() {
     offset: page * pageSize,
   });
 
-  // Full record with items loaded when entering edit mode
   const { data: fullRecord, isLoading: isLoadingRecord } = useGetPurchaseGatePass(
     selectedId ?? 0,
     {
@@ -52,8 +57,7 @@ export default function PurchaseGatePassPage() {
     }
   );
 
-  // Lookup lists for form dropdowns – fetch once (large limit)
-  const { data: productsData } = useListProducts({ limit: 200 });
+  const { data: productsData } = useListProducts({ limit: 500 });
   const { data: partiesData } = useListPurchaseParties({ limit: 200 });
 
   // ── Mutations ─────────────────────────────────────────────────────────────
@@ -61,15 +65,22 @@ export default function PurchaseGatePassPage() {
   const updateGP = useUpdatePurchaseGatePass();
   const deleteGP = useDeletePurchaseGatePass();
 
-  // Build a quick id→name map for the list view
   const partyMap: Record<number, string> = Object.fromEntries(
-    (partiesData?.rows ?? []).map((p) => [p.id, p.name])
+    (partiesData?.rows ?? []).map(p => [p.id, p.name])
   );
+
+  // ── Exit with dirty guard ─────────────────────────────────────────────────
+  const handleExit = useCallback(() => {
+    if (isFormDirty) {
+      if (!window.confirm("You have unsaved changes. Exit without saving?")) return;
+    }
+    setIsFormDirty(false);
+    exitForm();
+  }, [isFormDirty, exitForm]);
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept shortcuts while user is typing in an input/select/textarea
       const tag = (e.target as HTMLElement)?.tagName;
       const isTyping = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
 
@@ -84,15 +95,16 @@ export default function PurchaseGatePassPage() {
         setIsDeleteDialogOpen(true);
       } else if (e.key === "Escape" && !isTyping) {
         e.preventDefault();
-        exitForm();
+        handleExit();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedId, mode, startAdd, exitForm]);
+  }, [selectedId, mode, startAdd, handleExit]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleRefresh = () => {
+    if (isFormDirty && !window.confirm("You have unsaved changes. Refresh anyway?")) return;
     queryClient.invalidateQueries({ queryKey: getListPurchaseGatePassesQueryKey() });
     refetch();
     exitForm();
@@ -159,6 +171,7 @@ export default function PurchaseGatePassPage() {
 
   const isSaving = createGP.isPending || updateGP.isPending;
   const isDeleting = deleteGP.isPending;
+  const inForm = mode === "add" || mode === "edit";
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -168,7 +181,7 @@ export default function PurchaseGatePassPage() {
     >
       <Header title="Purchase Gate Pass / خریداری گیٹ پاس" />
 
-      <div className="flex-1 overflow-auto p-4 flex flex-col gap-4">
+      <div className="flex-1 overflow-auto p-4 flex flex-col gap-3">
         <Breadcrumb items={["Stock", "Purchase", "Gate Pass"]} />
 
         {/* Toolbar */}
@@ -177,7 +190,7 @@ export default function PurchaseGatePassPage() {
           onSave={mode === "add" ? handleSave : undefined}
           onUpdate={mode === "edit" ? handleSave : undefined}
           onDelete={() => setIsDeleteDialogOpen(true)}
-          onExit={exitForm}
+          onExit={handleExit}
           canSave={mode === "add"}
           canUpdate={mode === "edit"}
           canDelete={!!selectedId && mode === "idle"}
@@ -191,47 +204,53 @@ export default function PurchaseGatePassPage() {
           <span><kbd className="px-1 py-0.5 bg-muted border rounded text-xs">Ctrl+S</kbd> Save</span>
           <span><kbd className="px-1 py-0.5 bg-muted border rounded text-xs">Del</kbd> Delete</span>
           <span><kbd className="px-1 py-0.5 bg-muted border rounded text-xs">Esc</kbd> Exit</span>
+          {isFormDirty && (
+            <span className="text-amber-600 font-medium">● Unsaved changes</span>
+          )}
         </div>
 
-        {/* List Table */}
-        <EntityTable
-          columns={[
-            { key: "gpNumber", label: "GP #", width: "100px" },
-            { key: "date", label: "Date / تاریخ", width: "110px" },
-            {
-              key: "purchasePartyId",
-              label: "Party / فریق",
-              render: (row: PurchaseGatePass) =>
-                partyMap[row.purchasePartyId] ?? `#${row.purchasePartyId}`,
-            },
-            { key: "lotNumber", label: "Lot # / لاٹ", width: "110px" },
-            {
-              key: "items",
-              label: "Items",
-              width: "70px",
-              render: (row: PurchaseGatePass) =>
-                String(row.items?.length ?? 0),
-            },
-            {
-              key: "remarks",
-              label: "Remarks / ریمارکس",
-              render: (row: PurchaseGatePass) => row.remarks ?? "–",
-            },
-            {
-              key: "purchaseBillId",
-              label: "Bill #",
-              width: "80px",
-              render: (row: PurchaseGatePass) =>
-                row.purchaseBillId ? String(row.purchaseBillId) : "–",
-            },
-          ]}
-          rows={data?.rows ?? []}
-          total={data?.total ?? 0}
-          isLoading={isLoading}
-          selectedId={selectedId}
-          onRowClick={(row) => startEdit(row.id)}
-          emptyMessage="No gate passes found. Press F2 to create the first one."
-        />
+        {/* List Table — compact when form is open */}
+        <div
+          className={`transition-all duration-200 ${inForm ? "max-h-44 overflow-hidden rounded-md" : ""}`}
+        >
+          <EntityTable
+            columns={[
+              { key: "gpNumber", label: "GP #", width: "90px" },
+              { key: "date", label: "Date", width: "105px" },
+              {
+                key: "purchasePartyId",
+                label: "Party",
+                render: (row: PurchaseGatePass) =>
+                  partyMap[row.purchasePartyId] ?? `#${row.purchasePartyId}`,
+              },
+              { key: "lotNumber", label: "Lot #", width: "105px" },
+              {
+                key: "items",
+                label: "Items",
+                width: "60px",
+                render: (row: PurchaseGatePass) => String(row.items?.length ?? 0),
+              },
+              {
+                key: "remarks",
+                label: "Remarks",
+                render: (row: PurchaseGatePass) => row.remarks ?? "–",
+              },
+              {
+                key: "purchaseBillId",
+                label: "Bill #",
+                width: "72px",
+                render: (row: PurchaseGatePass) =>
+                  row.purchaseBillId ? String(row.purchaseBillId) : "–",
+              },
+            ]}
+            rows={data?.rows ?? []}
+            total={data?.total ?? 0}
+            isLoading={isLoading}
+            selectedId={selectedId}
+            onRowClick={row => startEdit(row.id)}
+            emptyMessage="No gate passes found. Press F2 to create the first one."
+          />
+        </div>
 
         <PaginationFooter
           page={page}
@@ -241,13 +260,14 @@ export default function PurchaseGatePassPage() {
         />
 
         {/* Form Section */}
-        {(mode === "add" || mode === "edit") && (
+        {inForm && (
           <div
-            className="bg-card border rounded-md p-4 shadow-sm shrink-0"
+            className="bg-card border rounded-md shadow-sm overflow-hidden"
             data-testid="container-form-section"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <h3 className="font-semibold text-base">
+            {/* Form card header */}
+            <div className="flex items-center gap-3 px-4 py-2.5 border-b bg-muted/10">
+              <h3 className="font-semibold text-sm">
                 {mode === "add"
                   ? "New Purchase Gate Pass / نیا گیٹ پاس"
                   : "Edit Purchase Gate Pass / ترمیم"}
@@ -258,9 +278,9 @@ export default function PurchaseGatePassPage() {
             </div>
 
             {mode === "edit" && isLoadingRecord ? (
-              <div className="flex items-center justify-center py-12 text-muted-foreground gap-2">
+              <div className="flex items-center justify-center py-16 text-muted-foreground gap-2">
                 <Loader2 className="h-5 w-5 animate-spin" />
-                <span className="text-sm">Loading record...</span>
+                <span className="text-sm">Loading record…</span>
               </div>
             ) : (
               <PurchaseGatePassForm
@@ -269,6 +289,7 @@ export default function PurchaseGatePassPage() {
                 products={productsData?.rows ?? []}
                 purchaseParties={partiesData?.rows ?? []}
                 onSubmit={onSubmit}
+                onDirtyChange={setIsFormDirty}
               />
             )}
           </div>
