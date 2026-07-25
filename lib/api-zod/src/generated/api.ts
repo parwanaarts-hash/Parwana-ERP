@@ -2072,9 +2072,8 @@ export const ListProductsQueryParams = zod.object({
   "limit": zod.coerce.number().optional(),
   "offset": zod.coerce.number().optional(),
   "search": zod.coerce.string().optional(),
-  "type": zod.enum(['Set', 'Than', 'Suit']).optional(),
-  "subCategoryId": zod.coerce.number().optional(),
-  "shikanjaId": zod.coerce.number().optional()
+  "category": zod.coerce.string().optional(),
+  "scale": zod.enum(['Ng', 'Set', 'Suit', 'Than']).optional()
 })
 
 export const ListProductsResponse = zod.object({
@@ -2082,9 +2081,14 @@ export const ListProductsResponse = zod.object({
   "id": zod.number(),
   "itemCode": zod.string(),
   "productName": zod.string(),
-  "type": zod.enum(['Set', 'Than', 'Suit']),
-  "subCategoryId": zod.number().nullish(),
-  "shikanjaId": zod.number().nullish(),
+  "urduName": zod.string().nullish(),
+  "category": zod.string().nullish(),
+  "scale": zod.enum(['Ng', 'Set', 'Suit', 'Than']),
+  "qty": zod.number(),
+  "stockFactor": zod.number(),
+  "length": zod.string().nullish(),
+  "rate": zod.string().nullish(),
+  "remarks": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })),
@@ -2098,18 +2102,28 @@ export const ListProductsResponse = zod.object({
 export const CreateProductBody = zod.object({
   "itemCode": zod.string(),
   "productName": zod.string(),
-  "type": zod.enum(['Set', 'Than', 'Suit']),
-  "subCategoryId": zod.number().nullish(),
-  "shikanjaId": zod.number().nullish()
+  "urduName": zod.string().nullish(),
+  "category": zod.string().nullish(),
+  "scale": zod.enum(['Ng', 'Set', 'Suit', 'Than']).optional(),
+  "qty": zod.number().optional(),
+  "stockFactor": zod.number().optional(),
+  "length": zod.string().nullish(),
+  "rate": zod.string().nullish(),
+  "remarks": zod.string().nullish()
 })
 
 export const CreateProductResponse = zod.object({
   "id": zod.number(),
   "itemCode": zod.string(),
   "productName": zod.string(),
-  "type": zod.enum(['Set', 'Than', 'Suit']),
-  "subCategoryId": zod.number().nullish(),
-  "shikanjaId": zod.number().nullish(),
+  "urduName": zod.string().nullish(),
+  "category": zod.string().nullish(),
+  "scale": zod.enum(['Ng', 'Set', 'Suit', 'Than']),
+  "qty": zod.number(),
+  "stockFactor": zod.number(),
+  "length": zod.string().nullish(),
+  "rate": zod.string().nullish(),
+  "remarks": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -2126,9 +2140,14 @@ export const GetProductResponse = zod.object({
   "id": zod.number(),
   "itemCode": zod.string(),
   "productName": zod.string(),
-  "type": zod.enum(['Set', 'Than', 'Suit']),
-  "subCategoryId": zod.number().nullish(),
-  "shikanjaId": zod.number().nullish(),
+  "urduName": zod.string().nullish(),
+  "category": zod.string().nullish(),
+  "scale": zod.enum(['Ng', 'Set', 'Suit', 'Than']),
+  "qty": zod.number(),
+  "stockFactor": zod.number(),
+  "length": zod.string().nullish(),
+  "rate": zod.string().nullish(),
+  "remarks": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -2144,18 +2163,28 @@ export const UpdateProductParams = zod.object({
 export const UpdateProductBody = zod.object({
   "itemCode": zod.string(),
   "productName": zod.string(),
-  "type": zod.enum(['Set', 'Than', 'Suit']),
-  "subCategoryId": zod.number().nullish(),
-  "shikanjaId": zod.number().nullish()
+  "urduName": zod.string().nullish(),
+  "category": zod.string().nullish(),
+  "scale": zod.enum(['Ng', 'Set', 'Suit', 'Than']).optional(),
+  "qty": zod.number().optional(),
+  "stockFactor": zod.number().optional(),
+  "length": zod.string().nullish(),
+  "rate": zod.string().nullish(),
+  "remarks": zod.string().nullish()
 })
 
 export const UpdateProductResponse = zod.object({
   "id": zod.number(),
   "itemCode": zod.string(),
   "productName": zod.string(),
-  "type": zod.enum(['Set', 'Than', 'Suit']),
-  "subCategoryId": zod.number().nullish(),
-  "shikanjaId": zod.number().nullish(),
+  "urduName": zod.string().nullish(),
+  "category": zod.string().nullish(),
+  "scale": zod.enum(['Ng', 'Set', 'Suit', 'Than']),
+  "qty": zod.number(),
+  "stockFactor": zod.number(),
+  "length": zod.string().nullish(),
+  "rate": zod.string().nullish(),
+  "remarks": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })

@@ -6,11 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ListProductsType = typeof ListProductsType[keyof typeof ListProductsType];
+export type ProductScale = typeof ProductScale[keyof typeof ProductScale];
 
 
-export const ListProductsType = {
+export const ProductScale = {
+  Ng: 'Ng',
   Set: 'Set',
-  Than: 'Than',
   Suit: 'Suit',
+  Than: 'Than',
 } as const;

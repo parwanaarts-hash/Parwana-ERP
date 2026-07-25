@@ -6,11 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ProductInputType = typeof ProductInputType[keyof typeof ProductInputType];
+export type ProductInputScale = typeof ProductInputScale[keyof typeof ProductInputScale];
 
 
-export const ProductInputType = {
+export const ProductInputScale = {
+  Ng: 'Ng',
   Set: 'Set',
-  Than: 'Than',
   Suit: 'Suit',
+  Than: 'Than',
 } as const;

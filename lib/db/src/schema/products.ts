@@ -1,52 +1,63 @@
-import { pgTable, serial, integer, text, timestamp, index, check } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, timestamp, numeric, check } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
-import { categoriesTable } from "./categories";
-import { shikanjaTable } from "./shikanja";
 
-export const productsTable = pgTable("products", {
-  id: serial("id").primaryKey(),
+// Scale values stored in English; displayed in Urdu on the frontend.
+// نگ = Ng | سیٹ = Set | سوٹ = Suit | تھان = Than
+export const PRODUCT_SCALES = ["Ng", "Set", "Suit", "Than"] as const;
+export type ProductScale = (typeof PRODUCT_SCALES)[number];
 
-  // Planning document Section 2.1: "Har Product ka apna unique Item Code hoga"
-  // Duplicate Item Codes allowed nahi hain.
-  itemCode: text("item_code").notNull().unique(),
+export const productsTable = pgTable(
+  "products",
+  {
+    id: serial("id").primaryKey(),
 
-  // Planning document Section 2.5 (Product List Report): "Product Name" explicitly listed
-  // as displayed information for every product.
-  productName: text("product_name").notNull(),
+    // Unique item code — no duplicates allowed.
+    itemCode: text("item_code").notNull().unique(),
 
-  // Planning document Section 2.1: "Product save karte waqt uska Type select karna lazmi hoga"
-  // Architecture decision AD-04: stored as text with CHECK constraint.
-  // Allowed values: 'Set', 'Than', 'Suit' — exactly as defined in the planning document.
-  type: text("type").notNull(),
+    // English product name used in system.
+    productName: text("product_name").notNull(),
 
-  // Architecture decision AD-11: sub_category_id FK to categories table.
-  // Links product to a Sub-Category row (parent_id IS NOT NULL in categories).
-  // Application layer enforces that only Sub-Categories are selectable in the dropdown.
-  // Nullable: planning document does not mandate category assignment at product creation.
-  // ON DELETE RESTRICT: a Sub-Category cannot be deleted while products are assigned to it.
-  subCategoryId: integer("sub_category_id").references(() => categoriesTable.id, { onDelete: "restrict" }),
+    // Urdu print name — used on printed documents only.
+    urduName: text("urdu_name"),
 
-  // Architecture decision AD-12: shikanja_id FK to shikanja table.
-  // Planning document: "Product create karte waqt Shikanja dropdown se select kiya jayega."
-  // Nullable: planning document does not mandate shikanja assignment at product creation.
-  // ON DELETE RESTRICT: a Shikanja cannot be deleted while products are assigned to it.
-  shikanjaId: integer("shikanja_id").references(() => shikanjaTable.id, { onDelete: "restrict" }),
+    // Category: Shalwar / Kameez / Dupatta / Embroidery (free-text enum on client side)
+    category: text("category"),
 
-  // Planning document Section 5.4: Har record ke sath Date aur Time automatically save hogi
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    // Scale (unit of measurement): Ng | Set | Suit | Than
+    scale: text("scale").notNull().default("Ng"),
 
-}, (table) => [
-  // Architecture decision AD-04: type must be one of the three defined product types.
-  check("products_type_check", sql`${table.type} IN ('Set', 'Than', 'Suit')`),
+    // Received quantity — default 0.
+    qty: integer("qty").notNull().default(0),
 
-  // Architecture decision AD-22: FK indexes for query performance.
-  index("idx_products_sub_category").on(table.subCategoryId),
-  index("idx_products_shikanja").on(table.shikanjaId),
-]);
+    // Stock movement multiplier — default 1.
+    stockFactor: integer("stock_factor").notNull().default(1),
 
-export const insertProductSchema = createInsertSchema(productsTable).omit({ id: true, createdAt: true, updatedAt: true });
+    // Thaan / Gaz / Meter length multiplier.
+    length: numeric("length"),
+
+    // Per-unit rate used in billing.
+    rate: numeric("rate"),
+
+    // Free-text remarks / notes.
+    remarks: text("remarks"),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    check(
+      "products_scale_check",
+      sql`${table.scale} IN ('Ng', 'Set', 'Suit', 'Than')`,
+    ),
+  ],
+);
+
+export const insertProductSchema = createInsertSchema(productsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Product = typeof productsTable.$inferSelect;

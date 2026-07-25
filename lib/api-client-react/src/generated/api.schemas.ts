@@ -104,45 +104,63 @@ export interface CategoryList {
   total: number;
 }
 
-export type ProductType = typeof ProductType[keyof typeof ProductType];
+export type ProductScale = typeof ProductScale[keyof typeof ProductScale];
 
 
-export const ProductType = {
+export const ProductScale = {
+  Ng: 'Ng',
   Set: 'Set',
-  Than: 'Than',
   Suit: 'Suit',
+  Than: 'Than',
 } as const;
 
 export interface Product {
   id: number;
   itemCode: string;
   productName: string;
-  type: ProductType;
   /** @nullable */
-  subCategoryId?: number | null;
+  urduName?: string | null;
   /** @nullable */
-  shikanjaId?: number | null;
+  category?: string | null;
+  scale: ProductScale;
+  qty: number;
+  stockFactor: number;
+  /** @nullable */
+  length?: string | null;
+  /** @nullable */
+  rate?: string | null;
+  /** @nullable */
+  remarks?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-export type ProductInputType = typeof ProductInputType[keyof typeof ProductInputType];
+export type ProductInputScale = typeof ProductInputScale[keyof typeof ProductInputScale];
 
 
-export const ProductInputType = {
+export const ProductInputScale = {
+  Ng: 'Ng',
   Set: 'Set',
-  Than: 'Than',
   Suit: 'Suit',
+  Than: 'Than',
 } as const;
 
 export interface ProductInput {
   itemCode: string;
   productName: string;
-  type: ProductInputType;
   /** @nullable */
-  subCategoryId?: number | null;
+  urduName?: string | null;
   /** @nullable */
-  shikanjaId?: number | null;
+  category?: string | null;
+  scale?: ProductInputScale;
+  qty?: number;
+  stockFactor?: number;
+  /** @nullable */
+  length?: string | null;
+  /** @nullable */
+  rate?: string | null;
+  /** @nullable */
+  remarks?: string | null;
 }
 
 export interface ProductList {
@@ -855,17 +873,17 @@ export type ListProductsParams = {
 limit?: LimitParameter;
 offset?: OffsetParameter;
 search?: string;
-type?: ListProductsType;
-subCategoryId?: number;
-shikanjaId?: number;
+category?: string;
+scale?: ListProductsScale;
 };
 
-export type ListProductsType = typeof ListProductsType[keyof typeof ListProductsType];
+export type ListProductsScale = typeof ListProductsScale[keyof typeof ListProductsScale];
 
 
-export const ListProductsType = {
+export const ListProductsScale = {
+  Ng: 'Ng',
   Set: 'Set',
-  Than: 'Than',
   Suit: 'Suit',
+  Than: 'Than',
 } as const;
 

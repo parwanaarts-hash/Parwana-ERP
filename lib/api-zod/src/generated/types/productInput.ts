@@ -5,14 +5,22 @@
  * Textile ERP API
  * OpenAPI spec version: 0.1.0
  */
-import type { ProductInputType } from './productInputType';
+import type { ProductInputScale } from './productInputScale';
 
 export interface ProductInput {
   itemCode: string;
   productName: string;
-  type: ProductInputType;
   /** @nullable */
-  subCategoryId?: number | null;
+  urduName?: string | null;
   /** @nullable */
-  shikanjaId?: number | null;
+  category?: string | null;
+  scale?: ProductInputScale;
+  qty?: number;
+  stockFactor?: number;
+  /** @nullable */
+  length?: string | null;
+  /** @nullable */
+  rate?: string | null;
+  /** @nullable */
+  remarks?: string | null;
 }

@@ -1,0 +1,259 @@
+STOP.
+
+Do NOT redesign the Product form as a modern web form.
+
+The attached reference image/PDF is the master design. Follow its layout and workflow as closely as possible.
+
+This is a Desktop Textile ERP, not a responsive website.
+
+==========================
+PRODUCT ENTRY FORM
+==========================
+
+Redesign the Product Entry screen using the reference image.
+
+GENERAL RULES
+
+- Compact desktop layout.
+- Minimal white space.
+- Keyboard-first workflow.
+- No large cards.
+- No unnecessary padding.
+- Professional accounting software appearance.
+
+------------------------------------------------
+
+TOP TOOLBAR
+
+Refresh
+New
+Save
+Update
+Delete
+Print (future)
+Exit
+
+------------------------------------------------
+
+ENTRY FORM
+
+Arrange the fields almost exactly like the reference.
+
+Required fields:
+
+1. Item Code
+2. Product Name (English)
+3. Product Print Name (Urdu)  ← used only for printing
+4. Category (Dropdown)
+
+Replace the existing "Volume" field.
+
+Example values:
+
+- Shalwar
+- Kameez
+- Dupatta
+- Embroidery
+
+5. Scale (Dropdown)
+
+Replace the existing Scale implementation.
+
+Display Urdu values:
+
+- سیٹ
+- سوٹ
+- تھان
+- نگ
+
+Internally the database may continue storing English enum values if required, but the operator must only see Urdu labels.
+
+6. Quantity
+
+Purpose:
+
+Represents received quantity.
+
+Default:
+
+0
+
+7. Stock Factor
+
+Purpose:
+
+Defines stock movement multiplier.
+
+Default:
+
+1
+
+Normally:
+
+1
+
+8. Length
+
+Represents Thaan/Gaz/Meter multiplier.
+
+Examples
+
+Suit
+
+Length = 1
+
+Set
+
+Length = 30
+
+Thaan
+
+Length = 20
+
+etc.
+
+9. Rate
+
+10. Remarks
+
+------------------------------------------------
+
+BUSINESS LOGIC
+
+Do NOT calculate anything inside Product Entry.
+
+Instead store these values for later billing.
+
+The ERP billing engine will use them.
+
+Formula:
+
+Total Length
+
+=
+
+Scale Quantity × Length
+
+Example
+
+8 Sets
+
+×
+
+30 Gaz
+
+=
+
+240 Gaz
+
+Bill Amount
+
+=
+
+240 × Rate
+
+Example
+
+240 × 250
+
+=
+
+60000
+
+Do NOT show Total Amount in Product Entry.
+
+That belongs to Purchase Bill / Sales Bill.
+
+------------------------------------------------
+
+DATABASE CHANGES
+
+Replace
+
+Volume
+
+with
+
+Category
+
+Add fields:
+
+category
+scale
+qty
+stockFactor
+length
+
+Defaults
+
+qty = 0
+
+stockFactor = 1
+
+Length nullable or default according to business rules.
+
+------------------------------------------------
+
+REGISTER
+
+The bottom register should follow the desktop ERP style.
+
+Columns:
+
+Item Code
+
+Product Name
+
+Category
+
+Scale
+
+Length
+
+Rate
+
+Status
+
+Search
+
+Double-click opens record.
+
+------------------------------------------------
+
+KEYBOARD
+
+Enter
+
+moves to next field.
+
+F2
+
+New
+
+Ctrl+S
+
+Save
+
+Esc
+
+Exit
+
+------------------------------------------------
+
+IMPORTANT
+
+This Product screen will become the MASTER TEMPLATE for all future master forms.
+
+Categories
+
+Shikanja
+
+Purchase Parties
+
+Sale Parties
+
+must follow the same layout and visual style.
+
+Do not create another design language.
+
+Use the attached PDF/image as the primary UI reference.

@@ -1510,19 +1510,15 @@ paths:
           in: query
           schema:
             type: string
-        - name: type
+        - name: category
           in: query
           schema:
             type: string
-            enum: [Set, Than, Suit]
-        - name: subCategoryId
+        - name: scale
           in: query
           schema:
-            type: integer
-        - name: shikanjaId
-          in: query
-          schema:
-            type: integer
+            type: string
+            enum: [Ng, Set, Suit, Than]
       responses:
         "200":
           description: OK
@@ -1801,7 +1797,7 @@ components:
 
     Product:
       type: object
-      required: [id, itemCode, productName, type, createdAt, updatedAt]
+      required: [id, itemCode, productName, scale, qty, stockFactor, createdAt, updatedAt]
       properties:
         id:
           type: integer
@@ -1809,13 +1805,23 @@ components:
           type: string
         productName:
           type: string
-        type:
+        urduName:
+          type: ["string", "null"]
+        category:
+          type: ["string", "null"]
+        scale:
           type: string
-          enum: [Set, Than, Suit]
-        subCategoryId:
-          type: ["integer", "null"]
-        shikanjaId:
-          type: ["integer", "null"]
+          enum: [Ng, Set, Suit, Than]
+        qty:
+          type: integer
+        stockFactor:
+          type: integer
+        length:
+          type: ["string", "null"]
+        rate:
+          type: ["string", "null"]
+        remarks:
+          type: ["string", "null"]
         createdAt:
           type: string
         updatedAt:
@@ -1823,19 +1829,29 @@ components:
 
     ProductInput:
       type: object
-      required: [itemCode, productName, type]
+      required: [itemCode, productName]
       properties:
         itemCode:
           type: string
         productName:
           type: string
-        type:
+        urduName:
+          type: ["string", "null"]
+        category:
+          type: ["string", "null"]
+        scale:
           type: string
-          enum: [Set, Than, Suit]
-        subCategoryId:
-          type: ["integer", "null"]
-        shikanjaId:
-          type: ["integer", "null"]
+          enum: [Ng, Set, Suit, Than]
+        qty:
+          type: integer
+        stockFactor:
+          type: integer
+        length:
+          type: ["string", "null"]
+        rate:
+          type: ["string", "null"]
+        remarks:
+          type: ["string", "null"]
 
     ProductList:
       type: object

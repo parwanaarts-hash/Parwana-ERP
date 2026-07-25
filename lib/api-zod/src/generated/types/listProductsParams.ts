@@ -6,14 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { LimitParameter } from './limitParameter';
-import type { ListProductsType } from './listProductsType';
+import type { ListProductsScale } from './listProductsScale';
 import type { OffsetParameter } from './offsetParameter';
 
 export type ListProductsParams = {
 limit?: LimitParameter;
 offset?: OffsetParameter;
 search?: string;
-type?: ListProductsType;
-subCategoryId?: number;
-shikanjaId?: number;
+category?: string;
+scale?: ListProductsScale;
 };
