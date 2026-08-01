@@ -51,13 +51,20 @@ CREATE TABLE "products" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"item_code" text NOT NULL,
 	"product_name" text NOT NULL,
-	"type" text NOT NULL,
-	"sub_category_id" integer,
-	"shikanja_id" integer,
+	"urdu_name" text,
+	"category" text,
+	"scale" text DEFAULT 'Ng' NOT NULL,
+	"qty" integer DEFAULT 0 NOT NULL,
+	"stock_factor" integer DEFAULT 1 NOT NULL,
+	"length" numeric,
+	"rate" numeric,
+	"remarks" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"sub_category_id" integer,
+	"shikanja_id" integer,
 	CONSTRAINT "products_item_code_unique" UNIQUE("item_code"),
-	CONSTRAINT "products_type_check" CHECK ("products"."type" IN ('Set', 'Than', 'Suit'))
+	CONSTRAINT "products_scale_check" CHECK ("products"."scale" IN ('Ng', 'Set', 'Suit', 'Than'))
 );
 --> statement-breakpoint
 CREATE TABLE "purchase_parties" (
@@ -282,8 +289,8 @@ CREATE TABLE "stock_ledger_entries" (
 );
 --> statement-breakpoint
 ALTER TABLE "categories" ADD CONSTRAINT "categories_parent_id_categories_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."categories"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "products" ADD CONSTRAINT "products_sub_category_id_categories_id_fk" FOREIGN KEY ("sub_category_id") REFERENCES "public"."categories"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "products" ADD CONSTRAINT "products_shikanja_id_shikanja_id_fk" FOREIGN KEY ("shikanja_id") REFERENCES "public"."shikanja"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "products" ADD CONSTRAINT "products_sub_category_id_categories_id_fk" FOREIGN KEY ("sub_category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "products" ADD CONSTRAINT "products_shikanja_id_shikanja_id_fk" FOREIGN KEY ("shikanja_id") REFERENCES "public"."shikanja"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "purchase_gate_passes" ADD CONSTRAINT "purchase_gate_passes_purchase_party_id_purchase_parties_id_fk" FOREIGN KEY ("purchase_party_id") REFERENCES "public"."purchase_parties"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "purchase_gate_passes" ADD CONSTRAINT "purchase_gate_passes_purchase_bill_id_purchase_bills_id_fk" FOREIGN KEY ("purchase_bill_id") REFERENCES "public"."purchase_bills"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "purchase_gate_pass_items" ADD CONSTRAINT "purchase_gate_pass_items_purchase_gate_pass_id_purchase_gate_passes_id_fk" FOREIGN KEY ("purchase_gate_pass_id") REFERENCES "public"."purchase_gate_passes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

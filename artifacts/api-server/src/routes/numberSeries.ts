@@ -24,7 +24,7 @@ const router = Router();
 router.get(
   "/next/:type",
   asyncHandler(async (req, res) => {
-    const typeParam = decodeURIComponent(req.params.type ?? "");
+    const typeParam = decodeURIComponent(String(req.params.type ?? ""));
     const validType = Object.values(DOCUMENT_TYPES).find((t) => t === typeParam);
 
     if (!validType) {

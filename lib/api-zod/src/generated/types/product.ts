@@ -24,6 +24,16 @@ export interface Product {
   rate?: string | null;
   /** @nullable */
   remarks?: string | null;
+  /**
+     * FK to categories.id (sub-category level)
+     * @nullable
+     */
+  subCategoryId?: number | null;
+  /**
+     * FK to shikanja.id
+     * @nullable
+     */
+  shikanjaId?: number | null;
   createdAt: string;
   updatedAt: string;
 }

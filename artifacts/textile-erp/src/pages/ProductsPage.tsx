@@ -473,7 +473,7 @@ export default function ProductsPage() {
             <select
               className={`${SEL} w-20`}
               value={form.scale ?? "Ng"}
-              onChange={(e) => setField("scale", e.target.value)}
+              onChange={(e) => setField("scale", e.target.value as ProductInput["scale"])}
               onKeyDown={onEnter}
               data-testid="select-product-scale"
             >

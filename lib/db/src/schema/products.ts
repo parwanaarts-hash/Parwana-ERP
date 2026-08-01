@@ -2,6 +2,8 @@ import { pgTable, serial, integer, text, timestamp, numeric, check } from "drizz
 import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { categoriesTable } from "./categories";
+import { shikanjaTable } from "./shikanja";
 
 // Scale values stored in English; displayed in Urdu on the frontend.
 // نگ = Ng | سیٹ = Set | سوٹ = Suit | تھان = Than
@@ -42,6 +44,12 @@ export const productsTable = pgTable(
 
     // Free-text remarks / notes.
     remarks: text("remarks"),
+
+    // Sub-category FK — points to a Sub-Category row in categories (parentId IS NOT NULL).
+    subCategoryId: integer("sub_category_id").references(() => categoriesTable.id, { onDelete: "set null" }),
+
+    // Shikanja FK — internal company grouping for this product.
+    shikanjaId: integer("shikanja_id").references(() => shikanjaTable.id, { onDelete: "set null" }),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),

@@ -17,6 +17,7 @@
 import { and, asc, count, eq, ilike, or } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
+  categoriesTable,
   productsTable,
   purchaseBillItemsTable,
   purchaseGatePassItemsTable,
@@ -24,6 +25,7 @@ import {
   returnGatePassItemsTable,
   salesBillItemsTable,
   saleGatePassItemsTable,
+  shikanjaTable,
   stockLedgerEntriesTable,
 } from "@workspace/db/schema";
 
@@ -37,29 +39,33 @@ const VALID_SCALES = ["Ng", "Set", "Suit", "Than"] as const;
 type ProductScale = (typeof VALID_SCALES)[number];
 
 export interface CreateProductInput {
-  itemCode:     string;
-  productName:  string;
-  urduName?:    string | null;
-  category?:    string | null;
-  scale?:       ProductScale;
-  qty?:         number;
-  stockFactor?: number;
-  length?:      string | null;
-  rate?:        string | null;
-  remarks?:     string | null;
+  itemCode:       string;
+  productName:    string;
+  urduName?:      string | null;
+  category?:      string | null;
+  scale?:         ProductScale;
+  qty?:           number;
+  stockFactor?:   number;
+  length?:        string | null;
+  rate?:          string | null;
+  remarks?:       string | null;
+  subCategoryId?: number | null;
+  shikanjaId?:    number | null;
 }
 
 export interface UpdateProductInput {
-  itemCode?:    string;
-  productName?: string;
-  urduName?:    string | null;
-  category?:    string | null;
-  scale?:       ProductScale;
-  qty?:         number;
-  stockFactor?: number;
-  length?:      string | null;
-  rate?:        string | null;
-  remarks?:     string | null;
+  itemCode?:      string;
+  productName?:   string;
+  urduName?:      string | null;
+  category?:      string | null;
+  scale?:         ProductScale;
+  qty?:           number;
+  stockFactor?:   number;
+  length?:        string | null;
+  rate?:          string | null;
+  remarks?:       string | null;
+  subCategoryId?: number | null;
+  shikanjaId?:    number | null;
 }
 
 export interface ListProductsInput {
@@ -206,19 +212,33 @@ export async function createProduct(
   validateItemCode(input.itemCode);
   validateProductName(input.productName);
 
+  // Validate FK references if provided
+  if (input.subCategoryId != null) {
+    const cat = await db.select({ id: categoriesTable.id }).from(categoriesTable)
+      .where(eq(categoriesTable.id, input.subCategoryId));
+    if (!cat[0]) throw new ProductCategoryNotFoundError(input.subCategoryId);
+  }
+  if (input.shikanjaId != null) {
+    const sh = await db.select({ id: shikanjaTable.id }).from(shikanjaTable)
+      .where(eq(shikanjaTable.id, input.shikanjaId));
+    if (!sh[0]) throw new ProductShikanjaNotFoundError(input.shikanjaId);
+  }
+
   const rows = await db
     .insert(productsTable)
     .values({
-      itemCode:    input.itemCode.trim(),
-      productName: input.productName.trim(),
-      urduName:    input.urduName    ?? null,
-      category:    input.category    ?? null,
-      scale:       input.scale       ?? "Ng",
-      qty:         input.qty         ?? 0,
-      stockFactor: input.stockFactor ?? 1,
-      length:      input.length      ?? null,
-      rate:        input.rate        ?? null,
-      remarks:     input.remarks     ?? null,
+      itemCode:      input.itemCode.trim(),
+      productName:   input.productName.trim(),
+      urduName:      input.urduName      ?? null,
+      category:      input.category      ?? null,
+      scale:         input.scale         ?? "Ng",
+      qty:           input.qty           ?? 0,
+      stockFactor:   input.stockFactor   ?? 1,
+      length:        input.length        ?? null,
+      rate:          input.rate          ?? null,
+      remarks:       input.remarks       ?? null,
+      subCategoryId: input.subCategoryId ?? null,
+      shikanjaId:    input.shikanjaId    ?? null,
     })
     .returning();
   return rows[0]!;
@@ -238,19 +258,33 @@ export async function updateProduct(
   return db.transaction(async (tx) => {
     await fetchLocked(tx, id);
 
+    // Validate FK references if provided
+    if (input.subCategoryId != null) {
+      const cat = await tx.select({ id: categoriesTable.id }).from(categoriesTable)
+        .where(eq(categoriesTable.id, input.subCategoryId));
+      if (!cat[0]) throw new ProductCategoryNotFoundError(input.subCategoryId);
+    }
+    if (input.shikanjaId != null) {
+      const sh = await tx.select({ id: shikanjaTable.id }).from(shikanjaTable)
+        .where(eq(shikanjaTable.id, input.shikanjaId));
+      if (!sh[0]) throw new ProductShikanjaNotFoundError(input.shikanjaId);
+    }
+
     const rows = await tx
       .update(productsTable)
       .set({
-        ...(input.itemCode    !== undefined && { itemCode:    input.itemCode.trim() }),
-        ...(input.productName !== undefined && { productName: input.productName.trim() }),
-        ...(input.urduName    !== undefined && { urduName:    input.urduName }),
-        ...(input.category    !== undefined && { category:    input.category }),
-        ...(input.scale       !== undefined && { scale:       input.scale }),
-        ...(input.qty         !== undefined && { qty:         input.qty }),
-        ...(input.stockFactor !== undefined && { stockFactor: input.stockFactor }),
-        ...(input.length      !== undefined && { length:      input.length }),
-        ...(input.rate        !== undefined && { rate:        input.rate }),
-        ...(input.remarks     !== undefined && { remarks:     input.remarks }),
+        ...(input.itemCode      !== undefined && { itemCode:      input.itemCode.trim() }),
+        ...(input.productName   !== undefined && { productName:   input.productName.trim() }),
+        ...(input.urduName      !== undefined && { urduName:      input.urduName }),
+        ...(input.category      !== undefined && { category:      input.category }),
+        ...(input.scale         !== undefined && { scale:         input.scale }),
+        ...(input.qty           !== undefined && { qty:           input.qty }),
+        ...(input.stockFactor   !== undefined && { stockFactor:   input.stockFactor }),
+        ...(input.length        !== undefined && { length:        input.length }),
+        ...(input.rate          !== undefined && { rate:          input.rate }),
+        ...(input.remarks       !== undefined && { remarks:       input.remarks }),
+        ...(input.subCategoryId !== undefined && { subCategoryId: input.subCategoryId }),
+        ...(input.shikanjaId    !== undefined && { shikanjaId:    input.shikanjaId }),
         updatedAt: new Date(),
       })
       .where(eq(productsTable.id, id))

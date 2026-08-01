@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ProductInput, ProductInputType } from "@workspace/api-client-react";
+import { ProductInput, ProductInputScale } from "@workspace/api-client-react";
 import { useListCategories, useListShikanja } from "@workspace/api-client-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -10,13 +10,19 @@ import { Input } from "@/components/ui/input";
 const schema = z.object({
   itemCode: z.string().min(1, "Required").max(100),
   productName: z.string().min(1, "Required").max(255),
-  type: z.enum(['Set', 'Than', 'Suit']),
+  scale: z.enum(['Ng', 'Set', 'Suit', 'Than']),
   subCategoryId: z.number().nullable().optional(),
   shikanjaId: z.number().nullable().optional(),
 });
 
+// Extended initialData type that includes optional FK fields not in ProductInput
+type ExtendedProductInput = Partial<ProductInput> & {
+  subCategoryId?: number | null;
+  shikanjaId?: number | null;
+};
+
 interface ProductFormProps {
-  initialData?: Partial<ProductInput>;
+  initialData?: ExtendedProductInput;
   onSubmit: (data: ProductInput) => void;
 }
 
@@ -29,7 +35,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
     defaultValues: {
       itemCode: initialData?.itemCode || "",
       productName: initialData?.productName || "",
-      type: initialData?.type || ProductInputType.Set,
+      scale: initialData?.scale || ProductInputScale.Set,
       subCategoryId: initialData?.subCategoryId ?? null,
       shikanjaId: initialData?.shikanjaId ?? null,
     }
@@ -40,13 +46,13 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
       form.reset({
         itemCode: initialData.itemCode || "",
         productName: initialData.productName || "",
-        type: initialData.type || ProductInputType.Set,
+        scale: initialData.scale || ProductInputScale.Set,
         subCategoryId: initialData.subCategoryId ?? null,
         shikanjaId: initialData.shikanjaId ?? null,
       });
     } else {
       form.reset({
-        itemCode: "", productName: "", type: ProductInputType.Set, subCategoryId: null, shikanjaId: null
+        itemCode: "", productName: "", scale: ProductInputScale.Set, subCategoryId: null, shikanjaId: null
       });
     }
   }, [initialData, form]);
@@ -82,7 +88,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
         />
         <FormField
           control={form.control}
-          name="type"
+          name="scale"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Type</FormLabel>
@@ -92,6 +98,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
                   data-testid="select-product-type"
                   className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
+                  <option value="Ng">Ng</option>
                   <option value="Set">Set</option>
                   <option value="Than">Than</option>
                   <option value="Suit">Suit</option>

@@ -1,47 +1,51 @@
 # Textile ERP
 
-A full-stack ERP system for textile businesses, covering Stock Module and ERP Module (purchases, sales, returns, payments, reports, accounts, and settings).
-
-## Run & Operate
-
-- **Workflows**: Start both `API Server` and `Textile ERP` workflows from the Replit UI (Run button)
-- `bash scripts/start-dev.sh` — start the API server manually (port 8080, kills any existing instance first)
-- `PORT=5000 BASE_PATH=/ pnpm --filter @workspace/textile-erp run dev` — start the frontend manually (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- `DATABASE_URL` — auto-provisioned by Replit (no manual setup needed)
+A full-stack Textile ERP system built with React, Express, and PostgreSQL.
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- **Frontend**: React + Vite + Tailwind CSS + shadcn/ui (`artifacts/textile-erp`)
+- **Backend**: Express API server (`artifacts/api-server`)
+- **Database**: PostgreSQL via Drizzle ORM (`lib/db`)
+- **Package manager**: pnpm workspace
 
-## Where things live
+## How to run
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+Both services start automatically via their configured workflows:
 
-## Architecture decisions
+| Workflow | Command | Port |
+|---|---|---|
+| `artifacts/textile-erp: web` | `PORT=24628 BASE_PATH=/ pnpm --filter @workspace/textile-erp run dev` | 24628 |
+| `artifacts/api-server: API Server` | `PORT=8080 pnpm --filter @workspace/api-server run dev` | 8080 |
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+The frontend is served at `/` and the API at `/api`.
 
-## Product
+## Database
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Uses Replit's built-in PostgreSQL (`DATABASE_URL` secret). To push schema changes:
+
+```bash
+pnpm --filter @workspace/db run push
+```
+
+## Required secrets
+
+- `DATABASE_URL` — PostgreSQL connection string (provisioned via Replit)
+- `SESSION_SECRET` — session signing secret
+
+## Project structure
+
+```
+artifacts/
+  textile-erp/    # React/Vite frontend
+  api-server/     # Express REST API
+lib/
+  db/             # Drizzle ORM schema & migrations
+  api-zod/        # Shared Zod schemas
+  api-client-react/ # React Query API client
+```
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
-
-## Gotchas
-
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Preserve the existing dark-theme register/form UI design (reference: attached PDF)
+- Entry point shows only two cards: Stock Module + ERP Module

@@ -1864,6 +1864,12 @@ components:
           type: ["string", "null"]
         remarks:
           type: ["string", "null"]
+        subCategoryId:
+          type: ["integer", "null"]
+          description: FK to categories.id (sub-category level)
+        shikanjaId:
+          type: ["integer", "null"]
+          description: FK to shikanja.id
         createdAt:
           type: string
         updatedAt:
@@ -1894,6 +1900,12 @@ components:
           type: ["string", "null"]
         remarks:
           type: ["string", "null"]
+        subCategoryId:
+          type: ["integer", "null"]
+          description: FK to categories.id (sub-category level)
+        shikanjaId:
+          type: ["integer", "null"]
+          description: FK to shikanja.id
 
     ProductList:
       type: object

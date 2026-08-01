@@ -28,29 +28,33 @@ const router: IRouter = Router();
 const SCALES = ["Ng", "Set", "Suit", "Than"] as const;
 
 const CreateBody = z.object({
-  itemCode:    z.string().min(1, { message: "itemCode is required" }).max(100),
-  productName: z.string().min(1, { message: "productName is required" }).max(255),
-  urduName:    z.string().max(255).nullable().optional(),
-  category:    z.string().max(100).nullable().optional(),
-  scale:       z.enum(SCALES).default("Ng"),
-  qty:         z.number().int().min(0).default(0),
-  stockFactor: z.number().int().min(0).default(1),
-  length:      z.string().nullable().optional(),
-  rate:        z.string().nullable().optional(),
-  remarks:     z.string().max(500).nullable().optional(),
+  itemCode:      z.string().min(1, { message: "itemCode is required" }).max(100),
+  productName:   z.string().min(1, { message: "productName is required" }).max(255),
+  urduName:      z.string().max(255).nullable().optional(),
+  category:      z.string().max(100).nullable().optional(),
+  scale:         z.enum(SCALES).default("Ng"),
+  qty:           z.number().int().min(0).default(0),
+  stockFactor:   z.number().int().min(0).default(1),
+  length:        z.string().nullable().optional(),
+  rate:          z.string().nullable().optional(),
+  remarks:       z.string().max(500).nullable().optional(),
+  subCategoryId: z.number().int().positive().nullable().optional(),
+  shikanjaId:    z.number().int().positive().nullable().optional(),
 });
 
 const UpdateBody = z.object({
-  itemCode:    z.string().min(1).max(100).optional(),
-  productName: z.string().min(1).max(255).optional(),
-  urduName:    z.string().max(255).nullable().optional(),
-  category:    z.string().max(100).nullable().optional(),
-  scale:       z.enum(SCALES).optional(),
-  qty:         z.number().int().min(0).optional(),
-  stockFactor: z.number().int().min(0).optional(),
-  length:      z.string().nullable().optional(),
-  rate:        z.string().nullable().optional(),
-  remarks:     z.string().max(500).nullable().optional(),
+  itemCode:      z.string().min(1).max(100).optional(),
+  productName:   z.string().min(1).max(255).optional(),
+  urduName:      z.string().max(255).nullable().optional(),
+  category:      z.string().max(100).nullable().optional(),
+  scale:         z.enum(SCALES).optional(),
+  qty:           z.number().int().min(0).optional(),
+  stockFactor:   z.number().int().min(0).optional(),
+  length:        z.string().nullable().optional(),
+  rate:          z.string().nullable().optional(),
+  remarks:       z.string().max(500).nullable().optional(),
+  subCategoryId: z.number().int().positive().nullable().optional(),
+  shikanjaId:    z.number().int().positive().nullable().optional(),
 });
 
 const ListQuery = z.object({

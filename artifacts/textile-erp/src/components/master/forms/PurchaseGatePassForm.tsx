@@ -176,7 +176,7 @@ function ProductCombobox({
                     : "text-muted-foreground"
                 }`}
               >
-                {p.type}
+                {p.scale}
               </span>
             </div>
           ))}

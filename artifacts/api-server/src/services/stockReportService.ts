@@ -102,7 +102,7 @@ export async function stockList(
         id:            productsTable.id,
         itemCode:      productsTable.itemCode,
         productName:   productsTable.productName,
-        type:          productsTable.type,
+        type:          productsTable.scale,
         subCategoryId: productsTable.subCategoryId,
         shikanjaId:    productsTable.shikanjaId,
         balance:       balanceSubquery,

@@ -324,21 +324,54 @@
           "primaryKey": false,
           "notNull": true
         },
-        "type": {
-          "name": "type",
+        "urdu_name": {
+          "name": "urdu_name",
           "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sub_category_id": {
-          "name": "sub_category_id",
-          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "shikanja_id": {
-          "name": "shikanja_id",
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scale": {
+          "name": "scale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Ng'"
+        },
+        "qty": {
+          "name": "qty",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "stock_factor": {
+          "name": "stock_factor",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "1"
+        },
+        "length": {
+          "name": "length",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rate": {
+          "name": "rate",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remarks": {
+          "name": "remarks",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -355,38 +388,34 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "sub_category_id": {
+          "name": "sub_category_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "shikanja_id": {
+          "name": "shikanja_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
         "idx_products_sub_category": {
           "name": "idx_products_sub_category",
           "columns": [
-            {
-              "expression": "sub_category_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
+            "sub_category_id"
           ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
+          "isUnique": false
         },
         "idx_products_shikanja": {
           "name": "idx_products_shikanja",
           "columns": [
-            {
-              "expression": "shikanja_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
+            "shikanja_id"
           ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
+          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -394,26 +423,28 @@
           "name": "products_sub_category_id_categories_id_fk",
           "tableFrom": "products",
           "tableTo": "categories",
+          "schemaTo": "public",
           "columnsFrom": [
             "sub_category_id"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "restrict",
+          "onDelete": "set null",
           "onUpdate": "no action"
         },
         "products_shikanja_id_shikanja_id_fk": {
           "name": "products_shikanja_id_shikanja_id_fk",
           "tableFrom": "products",
           "tableTo": "shikanja",
+          "schemaTo": "public",
           "columnsFrom": [
             "shikanja_id"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "restrict",
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -429,9 +460,9 @@
       },
       "policies": {},
       "checkConstraints": {
-        "products_type_check": {
-          "name": "products_type_check",
-          "value": "\"products\".\"type\" IN ('Set', 'Than', 'Suit')"
+        "products_scale_check": {
+          "name": "products_scale_check",
+          "value": "\"products\".\"scale\" IN ('Ng', 'Set', 'Suit', 'Than')"
         }
       },
       "isRLSEnabled": false

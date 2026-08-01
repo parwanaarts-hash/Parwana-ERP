@@ -2149,6 +2149,8 @@ export const ListProductsResponse = zod.object({
   "length": zod.string().nullish(),
   "rate": zod.string().nullish(),
   "remarks": zod.string().nullish(),
+  "subCategoryId": zod.number().nullish().describe('FK to categories.id (sub-category level)'),
+  "shikanjaId": zod.number().nullish().describe('FK to shikanja.id'),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })),
@@ -2169,7 +2171,9 @@ export const CreateProductBody = zod.object({
   "stockFactor": zod.number().optional(),
   "length": zod.string().nullish(),
   "rate": zod.string().nullish(),
-  "remarks": zod.string().nullish()
+  "remarks": zod.string().nullish(),
+  "subCategoryId": zod.number().nullish().describe('FK to categories.id (sub-category level)'),
+  "shikanjaId": zod.number().nullish().describe('FK to shikanja.id')
 })
 
 export const CreateProductResponse = zod.object({
@@ -2184,6 +2188,8 @@ export const CreateProductResponse = zod.object({
   "length": zod.string().nullish(),
   "rate": zod.string().nullish(),
   "remarks": zod.string().nullish(),
+  "subCategoryId": zod.number().nullish().describe('FK to categories.id (sub-category level)'),
+  "shikanjaId": zod.number().nullish().describe('FK to shikanja.id'),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -2208,6 +2214,8 @@ export const GetProductResponse = zod.object({
   "length": zod.string().nullish(),
   "rate": zod.string().nullish(),
   "remarks": zod.string().nullish(),
+  "subCategoryId": zod.number().nullish().describe('FK to categories.id (sub-category level)'),
+  "shikanjaId": zod.number().nullish().describe('FK to shikanja.id'),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -2230,7 +2238,9 @@ export const UpdateProductBody = zod.object({
   "stockFactor": zod.number().optional(),
   "length": zod.string().nullish(),
   "rate": zod.string().nullish(),
-  "remarks": zod.string().nullish()
+  "remarks": zod.string().nullish(),
+  "subCategoryId": zod.number().nullish().describe('FK to categories.id (sub-category level)'),
+  "shikanjaId": zod.number().nullish().describe('FK to shikanja.id')
 })
 
 export const UpdateProductResponse = zod.object({
@@ -2245,6 +2255,8 @@ export const UpdateProductResponse = zod.object({
   "length": zod.string().nullish(),
   "rate": zod.string().nullish(),
   "remarks": zod.string().nullish(),
+  "subCategoryId": zod.number().nullish().describe('FK to categories.id (sub-category level)'),
+  "shikanjaId": zod.number().nullish().describe('FK to shikanja.id'),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
