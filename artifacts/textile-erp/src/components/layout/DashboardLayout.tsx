@@ -139,6 +139,13 @@ export function DashboardLayout({
           {children}
         </div>
       </div>
+
+      {/* Footer */}
+      <div className="bg-background border-t px-6 h-10 flex items-center justify-center shrink-0">
+        <p className="text-xs text-muted-foreground tracking-wide">
+          Designed By <span className="font-semibold text-foreground">MUHAMMAD HUZAIFA</span>
+        </p>
+      </div>
     </div>
   );
 }
