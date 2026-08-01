@@ -2,12 +2,12 @@
  * ProductsPage — Desktop ERP style, follows reference image layout.
  *
  * Layout:
- *   Top toolbar   → Refresh | New | Save | Update | Delete | Print | Exit
+ *   Top toolbar   → Refresh | Save | Update | Delete | Print | Exit
  *   Form section  → always-visible compact fields
  *   Register grid → double-click row to load into form
  *
  * Keyboard:
- *   Enter → next field   F2 → New   Ctrl+S → Save   Esc → Exit
+ *   Enter → next field   Ctrl+S → Save   Esc → Exit
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -22,7 +22,7 @@ import {
 } from "@workspace/api-client-react";
 import type { Product, ProductInput } from "@workspace/api-client-react";
 import {
-  RefreshCcw, FilePlus, Save, Pencil, Trash2, Printer, LogOut,
+  RefreshCcw, Save, Pencil, Trash2, Printer, LogOut,
 } from "lucide-react";
 
 // ── Scale display mapping ────────────────────────────────────────────────────
@@ -52,7 +52,7 @@ const EMPTY: ProductInput = {
   remarks: "",
 };
 
-type Mode = "idle" | "new" | "edit";
+type Mode = "new" | "edit";
 
 // ── ERP Input styles ─────────────────────────────────────────────────────────
 const INP =
@@ -87,7 +87,7 @@ export default function ProductsPage() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
 
-  const [mode, setMode]               = useState<Mode>("idle");
+  const [mode, setMode]               = useState<Mode>("new");
   const [selectedId, setSelectedId]   = useState<number | null>(null);
   const [form, setForm]               = useState<ProductInput>(EMPTY);
   const [search, setSearch]           = useState("");
@@ -141,27 +141,25 @@ export default function ProductsPage() {
     });
   }
 
-  // ── Toolbar actions ────────────────────────────────────────────────────────
-  function handleNew() {
+  // ── Reset to new entry ─────────────────────────────────────────────────────
+  function resetToNew() {
     setMode("new");
     setSelectedId(null);
     setForm(EMPTY);
     setTimeout(() => firstFieldRef.current?.focus(), 50);
   }
 
+  // ── Toolbar actions ────────────────────────────────────────────────────────
   function handleRefresh() {
     queryClient.invalidateQueries({ queryKey: getListProductsQueryKey() });
     refetch();
-    setMode("idle");
-    setSelectedId(null);
-    setForm(EMPTY);
+    resetToNew();
     setSearch("");
     setPage(0);
   }
 
   function handleExit() {
-    if (mode !== "idle") { setMode("idle"); setSelectedId(null); setForm(EMPTY); }
-    else setLocation("/stock/add");
+    setLocation("/stock/add");
   }
 
   function handleSave() {
@@ -175,7 +173,7 @@ export default function ProductsPage() {
           notify("Product saved.");
           queryClient.invalidateQueries({ queryKey: getListProductsQueryKey() });
           refetch();
-          handleNew();
+          resetToNew();
         },
         onError: (e: any) => notify(e?.message ?? "Save failed.", true),
       },
@@ -194,6 +192,7 @@ export default function ProductsPage() {
           notify("Product updated.");
           queryClient.invalidateQueries({ queryKey: getListProductsQueryKey() });
           refetch();
+          resetToNew();
         },
         onError: (e: any) => notify(e?.message ?? "Update failed.", true),
       },
@@ -214,9 +213,7 @@ export default function ProductsPage() {
           notify("Product deleted.");
           queryClient.invalidateQueries({ queryKey: getListProductsQueryKey() });
           refetch();
-          setMode("idle");
-          setSelectedId(null);
-          setForm(EMPTY);
+          resetToNew();
           setDeleteConfirm(false);
         },
         onError: (e: any) => { notify(e?.message ?? "Delete failed.", true); setDeleteConfirm(false); },
@@ -227,7 +224,6 @@ export default function ProductsPage() {
   // ── Keyboard shortcuts ─────────────────────────────────────────────────────
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "F2") { e.preventDefault(); handleNew(); }
       if (e.ctrlKey && e.key === "s") { e.preventDefault(); mode === "new" ? handleSave() : mode === "edit" ? handleUpdate() : void 0; }
       if (e.key === "Escape") { e.preventDefault(); handleExit(); }
     }
@@ -258,7 +254,6 @@ export default function ProductsPage() {
       <div className="flex justify-center border-b border-[#333] bg-[#1a1a2e] shrink-0">
         <TBtn icon={RefreshCcw}  label="Refresh" onClick={handleRefresh} />
         <div className="w-px bg-[#333] my-1" />
-        <TBtn icon={FilePlus}    label="New"     onClick={handleNew}    color="text-green-400" />
         <TBtn icon={Save}        label="Save"    onClick={handleSave}   disabled={mode !== "new" || isBusy}   color="text-blue-400" />
         <TBtn icon={Pencil}      label="Update"  onClick={handleUpdate} disabled={mode !== "edit" || isBusy}  color="text-yellow-400" />
         <TBtn icon={Trash2}      label="Delete"  onClick={handleDelete} disabled={!selectedId || isBusy}      color="text-red-400" />
@@ -292,7 +287,6 @@ export default function ProductsPage() {
             <button
               className="bg-[#1e3a5f] border border-[#446] text-white text-[10px] px-2 h-6 hover:bg-[#2a4f7f] shrink-0"
               onClick={() => {
-                /* search by item code — focus search */
                 const el = document.getElementById("reg-search");
                 if (el) el.focus();
               }}
@@ -355,63 +349,37 @@ export default function ProductsPage() {
 
           <div className="flex items-center gap-1.5">
             <label className={LBL}>QTY</label>
-            <input
-              type="number"
-              className={`${INP} w-16`}
-              value={form.qty ?? 0}
-              onChange={(e) => setField("qty", Number(e.target.value))}
-              onKeyDown={onEnter}
-              data-testid="input-product-qty"
-            />
+            <input type="number" className={`${INP} w-16`} value={form.qty ?? 0}
+              onChange={(e) => setField("qty", Number(e.target.value))} onKeyDown={onEnter}
+              data-testid="input-product-qty" />
           </div>
 
           <div className="flex items-center gap-1.5">
             <label className={`${LBL} font-urdu`}>تھان</label>
-            <input
-              type="number"
-              className={`${INP} w-16`}
-              value={form.stockFactor ?? 1}
-              onChange={(e) => setField("stockFactor", Number(e.target.value))}
-              onKeyDown={onEnter}
-              data-testid="input-product-stockfactor"
-            />
+            <input type="number" className={`${INP} w-16`} value={form.stockFactor ?? 1}
+              onChange={(e) => setField("stockFactor", Number(e.target.value))} onKeyDown={onEnter}
+              data-testid="input-product-stockfactor" />
           </div>
 
           <div className="flex items-center gap-1.5">
             <label className={`${LBL} font-urdu`}>میٹر</label>
-            <input
-              type="number"
-              className={`${INP} w-20`}
-              placeholder="0"
-              value={form.length ?? ""}
-              onChange={(e) => setField("length", e.target.value || null)}
-              onKeyDown={onEnter}
-              data-testid="input-product-length"
-            />
+            <input type="number" className={`${INP} w-20`} placeholder="0" value={form.length ?? ""}
+              onChange={(e) => setField("length", e.target.value || null)} onKeyDown={onEnter}
+              data-testid="input-product-length" />
           </div>
 
           <div className="flex items-center gap-1.5">
             <label className={LBL}>Rate:</label>
-            <input
-              type="number"
-              className={`${INP} w-20`}
-              placeholder="0"
-              value={form.rate ?? ""}
-              onChange={(e) => setField("rate", e.target.value || null)}
-              onKeyDown={onEnter}
-              data-testid="input-product-rate"
-            />
+            <input type="number" className={`${INP} w-20`} placeholder="0" value={form.rate ?? ""}
+              onChange={(e) => setField("rate", e.target.value || null)} onKeyDown={onEnter}
+              data-testid="input-product-rate" />
           </div>
 
           <div className="flex items-center gap-1.5 flex-1 min-w-0">
             <label className={LBL}>Remarks:</label>
-            <input
-              className={`${INP} min-w-0`}
-              value={form.remarks ?? ""}
-              onChange={(e) => setField("remarks", e.target.value || null)}
-              onKeyDown={onEnter}
-              data-testid="input-product-remarks"
-            />
+            <input className={`${INP} min-w-0`} value={form.remarks ?? ""}
+              onChange={(e) => setField("remarks", e.target.value || null)} onKeyDown={onEnter}
+              data-testid="input-product-remarks" />
           </div>
         </div>
       </div>
@@ -438,9 +406,7 @@ export default function ProductsPage() {
           <thead className="sticky top-0 z-10">
             <tr className="bg-[#0f3460] text-white">
               {["Item Code", "Product Name", "Category", "Scale", "Length", "Rate", "Remarks"].map((h) => (
-                <th key={h} className="text-left px-2 py-1 border-r border-[#1e5090] font-medium whitespace-nowrap">
-                  {h}
-                </th>
+                <th key={h} className="text-left px-2 py-1 border-r border-[#1e5090] font-medium whitespace-nowrap">{h}</th>
               ))}
             </tr>
           </thead>
@@ -449,17 +415,13 @@ export default function ProductsPage() {
               Array.from({ length: 6 }).map((_, i) => (
                 <tr key={i} className="border-b border-[#222]">
                   {Array.from({ length: 7 }).map((_, j) => (
-                    <td key={j} className="px-2 py-1">
-                      <div className="h-3 bg-[#2a2a3e] rounded animate-pulse w-3/4" />
-                    </td>
+                    <td key={j} className="px-2 py-1"><div className="h-3 bg-[#2a2a3e] rounded animate-pulse w-3/4" /></td>
                   ))}
                 </tr>
               ))
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-6 text-[#555]">
-                  No products found.
-                </td>
+                <td colSpan={7} className="text-center py-6 text-[#555]">No products found.</td>
               </tr>
             ) : (
               rows.map((row, i) => {
@@ -468,12 +430,9 @@ export default function ProductsPage() {
                   <tr
                     key={row.id}
                     className={`border-b border-[#222] cursor-pointer transition-colors
-                      ${isSelected
-                        ? "bg-[#1e3a5f] text-white"
-                        : i % 2 === 0
-                          ? "bg-[#12121e] hover:bg-[#1a1a30] text-[#ccc]"
-                          : "bg-[#15152a] hover:bg-[#1a1a30] text-[#ccc]"
-                      }`}
+                      ${isSelected ? "bg-[#1e3a5f] text-white"
+                        : i % 2 === 0 ? "bg-[#12121e] hover:bg-[#1a1a30] text-[#ccc]"
+                        : "bg-[#15152a] hover:bg-[#1a1a30] text-[#ccc]"}`}
                     onClick={() => setSelectedId(row.id)}
                     onDoubleClick={() => loadRow(row)}
                     data-testid={`row-entity-${row.id}`}
@@ -496,30 +455,20 @@ export default function ProductsPage() {
       {/* ── Pagination ── */}
       {pages > 1 && (
         <div className="flex items-center justify-center gap-2 px-3 py-1 bg-[#16162a] border-t border-[#333] shrink-0">
-          <button
-            className="text-[10px] px-2 py-0.5 bg-[#0f3460] hover:bg-[#1e5090] disabled:opacity-40"
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-          >◄ Prev</button>
+          <button className="text-[10px] px-2 py-0.5 bg-[#0f3460] hover:bg-[#1e5090] disabled:opacity-40"
+            onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>◄ Prev</button>
           <span className="text-[10px] text-[#888]">Page {page + 1} / {pages}</span>
-          <button
-            className="text-[10px] px-2 py-0.5 bg-[#0f3460] hover:bg-[#1e5090] disabled:opacity-40"
-            onClick={() => setPage((p) => Math.min(pages - 1, p + 1))}
-            disabled={page >= pages - 1}
-          >Next ►</button>
+          <button className="text-[10px] px-2 py-0.5 bg-[#0f3460] hover:bg-[#1e5090] disabled:opacity-40"
+            onClick={() => setPage((p) => Math.min(pages - 1, p + 1))} disabled={page >= pages - 1}>Next ►</button>
         </div>
       )}
 
       {/* ── Mode badge ── */}
       <div className="flex items-center gap-3 px-3 py-0.5 bg-[#0f0f1a] border-t border-[#333] shrink-0 text-[10px]">
-        <span className={`px-1.5 py-0.5 rounded ${
-          mode === "new"  ? "bg-green-900 text-green-300"  :
-          mode === "edit" ? "bg-yellow-900 text-yellow-300" :
-                            "bg-[#222] text-[#555]"
-        }`}>
-          {mode === "new" ? "NEW" : mode === "edit" ? "EDIT" : "BROWSE"}
+        <span className={`px-1.5 py-0.5 rounded ${mode === "new" ? "bg-green-900 text-green-300" : "bg-yellow-900 text-yellow-300"}`}>
+          {mode === "new" ? "NEW" : "EDIT"}
         </span>
-        <span className="text-[#555]">F2=New · Ctrl+S=Save · Esc=Exit · Double-click row to edit</span>
+        <span className="text-[#555]">Ctrl+S=Save · Esc=Exit · Double-click row to edit</span>
       </div>
 
       {/* ── Delete confirm overlay ── */}

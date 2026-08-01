@@ -23,6 +23,7 @@ export default function PurchasePartiesPage() {
 
   const [searchInput, setSearchInput] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [formKey, setFormKey] = useState(0);
 
   const { data, isLoading, refetch } = useListPurchaseParties({ search: search || undefined, limit: pageSize, offset: page * pageSize });
   const createPurchaseParty = useCreatePurchaseParty();
@@ -34,27 +35,42 @@ export default function PurchasePartiesPage() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) { e.preventDefault(); handleRefresh(); }
-      else if (e.key === 'F2') { e.preventDefault(); startAdd(); }
       else if (e.key === 'Delete' && selectedId && mode === 'idle') { e.preventDefault(); setIsDeleteDialogOpen(true); }
       else if (e.key === 'Escape') { e.preventDefault(); exitForm(); }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedId, mode, startAdd, exitForm]);
+  }, [selectedId, mode, exitForm]);
 
   const handleSearch = () => { setSearch(searchInput); setPage(0); };
-  const handleRefresh = () => { queryClient.invalidateQueries({ queryKey: getListPurchasePartiesQueryKey() }); refetch(); exitForm(); setSearchInput(""); setSearch(""); };
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: getListPurchasePartiesQueryKey() });
+    refetch();
+    startAdd();
+    setSearchInput("");
+    setSearch("");
+  };
   const handleSave = () => { const form = document.getElementById("entity-form") as HTMLFormElement; if (form) form.requestSubmit(); };
 
   const onSubmit = (formData: PurchasePartyInput) => {
     if (mode === 'add') {
       createPurchaseParty.mutate({ data: formData }, {
-        onSuccess: () => { toast({ title: "Success", description: "Purchase Party created." }); queryClient.invalidateQueries({ queryKey: getListPurchasePartiesQueryKey() }); exitForm(); },
+        onSuccess: () => {
+          toast({ title: "Success", description: "Purchase Party created." });
+          queryClient.invalidateQueries({ queryKey: getListPurchasePartiesQueryKey() });
+          setFormKey(k => k + 1);
+          startAdd();
+        },
         onError: (err: any) => toast({ title: "Error", description: err.message || "Failed.", variant: "destructive" })
       });
     } else if (mode === 'edit' && selectedId) {
       updatePurchaseParty.mutate({ id: selectedId, data: formData }, {
-        onSuccess: () => { toast({ title: "Success", description: "Purchase Party updated." }); queryClient.invalidateQueries({ queryKey: getListPurchasePartiesQueryKey() }); exitForm(); },
+        onSuccess: () => {
+          toast({ title: "Success", description: "Purchase Party updated." });
+          queryClient.invalidateQueries({ queryKey: getListPurchasePartiesQueryKey() });
+          setFormKey(k => k + 1);
+          startAdd();
+        },
         onError: (err: any) => toast({ title: "Error", description: err.message || "Failed.", variant: "destructive" })
       });
     }
@@ -63,7 +79,13 @@ export default function PurchasePartiesPage() {
   const handleDelete = () => {
     if (!selectedId) return;
     deletePurchaseParty.mutate({ id: selectedId }, {
-      onSuccess: () => { toast({ title: "Success", description: "Purchase Party deleted." }); queryClient.invalidateQueries({ queryKey: getListPurchasePartiesQueryKey() }); setIsDeleteDialogOpen(false); exitForm(); },
+      onSuccess: () => {
+        toast({ title: "Success", description: "Purchase Party deleted." });
+        queryClient.invalidateQueries({ queryKey: getListPurchasePartiesQueryKey() });
+        setIsDeleteDialogOpen(false);
+        setFormKey(k => k + 1);
+        startAdd();
+      },
       onError: (err: any) => { toast({ title: "Error", description: err.message || "Failed.", variant: "destructive" }); setIsDeleteDialogOpen(false); }
     });
   };
@@ -74,9 +96,16 @@ export default function PurchasePartiesPage() {
       <div className="flex-1 overflow-auto p-4 flex flex-col gap-4 relative">
         <Breadcrumb items={["Stock", "Add", "Purchase Parties"]} />
         <Toolbar 
-          onRefresh={handleRefresh} onSave={mode === 'add' ? handleSave : undefined} onUpdate={mode === 'edit' ? handleSave : undefined} onDelete={() => setIsDeleteDialogOpen(true)} onExit={exitForm}
-          canSave={mode === 'add'} canUpdate={mode === 'edit'} canDelete={!!selectedId && mode === 'idle'}
-          isSaving={createPurchaseParty.isPending || updatePurchaseParty.isPending} isDeleting={deletePurchaseParty.isPending}
+          onRefresh={handleRefresh}
+          onSave={mode === 'add' ? handleSave : undefined}
+          onUpdate={mode === 'edit' ? handleSave : undefined}
+          onDelete={() => setIsDeleteDialogOpen(true)}
+          onExit={exitForm}
+          canSave={mode === 'add'}
+          canUpdate={mode === 'edit'}
+          canDelete={!!selectedId && mode === 'edit'}
+          isSaving={createPurchaseParty.isPending || updatePurchaseParty.isPending}
+          isDeleting={deletePurchaseParty.isPending}
         />
         <SearchToolbar value={searchInput} onChange={setSearchInput} onSearch={handleSearch} placeholder="Search purchase parties..." />
         <EntityTable
@@ -87,24 +116,24 @@ export default function PurchasePartiesPage() {
             { key: 'city', label: 'City' },
             { key: 'openingBalance', label: 'Opening Balance' },
           ]}
-          rows={data?.rows || []} total={data?.total || 0} isLoading={isLoading} selectedId={selectedId} onRowClick={(row) => startEdit(row.id)}
+          rows={data?.rows || []} total={data?.total || 0} isLoading={isLoading} selectedId={selectedId}
+          onRowClick={(row) => startEdit(row.id)}
         />
         <PaginationFooter page={page} pageSize={pageSize} total={data?.total || 0} onPageChange={setPage} />
-        {(mode === 'add' || mode === 'edit') && (
-          <div className="bg-card border rounded-md p-4 shadow-sm shrink-0">
-            <h3 className="font-semibold text-lg mb-4">{mode === 'add' ? 'Add Purchase Party' : 'Edit Purchase Party'}</h3>
-            <PurchasePartyForm
-              initialData={mode === 'edit' && selectedRow ? {
-                name: selectedRow.name,
-                phone: selectedRow.phone ?? undefined,
-                city: selectedRow.city ?? undefined,
-                address: selectedRow.address ?? undefined,
-                openingBalance: selectedRow.openingBalance ?? undefined,
-              } : undefined}
-              onSubmit={onSubmit}
-            />
-          </div>
-        )}
+        <div className="bg-card border rounded-md p-4 shadow-sm shrink-0">
+          <h3 className="font-semibold text-lg mb-4">{mode === 'edit' ? 'Edit Purchase Party' : 'New Purchase Party'}</h3>
+          <PurchasePartyForm
+            key={formKey}
+            initialData={mode === 'edit' && selectedRow ? {
+              name: selectedRow.name,
+              phone: selectedRow.phone ?? undefined,
+              city: selectedRow.city ?? undefined,
+              address: selectedRow.address ?? undefined,
+              openingBalance: selectedRow.openingBalance ?? undefined,
+            } : undefined}
+            onSubmit={onSubmit}
+          />
+        </div>
       </div>
       <ConfirmDeleteDialog open={isDeleteDialogOpen} onCancel={() => setIsDeleteDialogOpen(false)} onConfirm={handleDelete} isDeleting={deletePurchaseParty.isPending} entityName="purchase party" />
     </div>

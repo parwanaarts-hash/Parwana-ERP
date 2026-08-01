@@ -98,6 +98,20 @@ export class ProductValidationError extends Error {
   }
 }
 
+export class ProductCategoryNotFoundError extends Error {
+  constructor(id: number) {
+    super(`Category not found: id=${id}`);
+    this.name = "ProductCategoryNotFoundError";
+  }
+}
+
+export class ProductShikanjaNotFoundError extends Error {
+  constructor(id: number) {
+    super(`Shikanja not found: id=${id}`);
+    this.name = "ProductShikanjaNotFoundError";
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------

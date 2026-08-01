@@ -131,6 +131,30 @@ export function formatDocumentNumber(prefix: string, number: number): string {
 }
 
 /**
+ * Reads the NEXT number that would be issued for a document type, WITHOUT
+ * reserving or incrementing the counter.  Use this for UI preview only.
+ *
+ * @param documentType - One of the DOCUMENT_TYPES values.
+ * @returns The formatted number that the next getNextDocumentNumber call would return.
+ * @throws NumberSeriesNotFoundError if no seed row exists for the type.
+ */
+export async function peekNextDocumentNumber(
+  documentType: DocumentType
+): Promise<string> {
+  const rows = await db
+    .select()
+    .from(numberSeriesTable)
+    .where(eq(numberSeriesTable.documentType, documentType));
+
+  if (rows.length === 0) {
+    throw new NumberSeriesNotFoundError(documentType);
+  }
+
+  const row = rows[0]!;
+  return formatDocumentNumber(row.prefix, row.currentNumber + 1);
+}
+
+/**
  * Reads the current counter for a document type WITHOUT incrementing it.
  * Useful for display or diagnostic purposes only — do NOT use this to
  * pre-read a number you intend to assign; use getNextDocumentNumber instead.
