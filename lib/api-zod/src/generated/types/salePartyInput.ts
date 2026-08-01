@@ -5,12 +5,18 @@
  * Textile ERP API
  * OpenAPI spec version: 0.1.0
  */
+import type { SalePartyInputType } from './salePartyInputType';
 
 export interface SalePartyInput {
   name: string;
-  phone?: string;
-  city?: string;
+  nameUrdu?: string;
   address?: string;
-  creditLimit?: string;
-  openingBalance?: string;
+  city?: string;
+  phone?: string;
+  mobile?: string;
+  creditLimit?: number;
+  openingCredit?: number;
+  openingDebit?: number;
+  type?: SalePartyInputType;
+  shikanjaId?: number;
 }

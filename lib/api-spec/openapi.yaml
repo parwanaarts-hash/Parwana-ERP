@@ -1639,14 +1639,24 @@ components:
           type: integer
         name:
           type: string
-        phone:
-          type: ["string", "null"]
-        city:
+        nameUrdu:
           type: ["string", "null"]
         address:
           type: ["string", "null"]
-        openingBalance:
+        city:
           type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        mobile:
+          type: ["string", "null"]
+        openingCredit:
+          type: ["string", "null"]
+        openingDebit:
+          type: ["string", "null"]
+        type:
+          type: ["string", "null"]
+        shikanjaId:
+          type: ["integer", "null"]
         createdAt:
           type: string
         updatedAt:
@@ -1658,14 +1668,25 @@ components:
       properties:
         name:
           type: string
-        phone:
-          type: string
-        city:
+        nameUrdu:
           type: string
         address:
           type: string
-        openingBalance:
+        city:
           type: string
+        phone:
+          type: string
+        mobile:
+          type: string
+        openingCredit:
+          type: number
+        openingDebit:
+          type: number
+        type:
+          type: string
+          enum: [cash, credit]
+        shikanjaId:
+          type: integer
 
     PurchasePartyList:
       type: object
@@ -1686,16 +1707,26 @@ components:
           type: integer
         name:
           type: string
-        phone:
-          type: ["string", "null"]
-        city:
+        nameUrdu:
           type: ["string", "null"]
         address:
           type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        mobile:
+          type: ["string", "null"]
         creditLimit:
           type: ["string", "null"]
-        openingBalance:
+        openingCredit:
           type: ["string", "null"]
+        openingDebit:
+          type: ["string", "null"]
+        type:
+          type: ["string", "null"]
+        shikanjaId:
+          type: ["integer", "null"]
         createdAt:
           type: string
         updatedAt:
@@ -1707,16 +1738,27 @@ components:
       properties:
         name:
           type: string
-        phone:
-          type: string
-        city:
+        nameUrdu:
           type: string
         address:
           type: string
+        city:
+          type: string
+        phone:
+          type: string
+        mobile:
+          type: string
         creditLimit:
+          type: number
+        openingCredit:
+          type: number
+        openingDebit:
+          type: number
+        type:
           type: string
-        openingBalance:
-          type: string
+          enum: [cash, credit]
+        shikanjaId:
+          type: integer
 
     SalePartyList:
       type: object

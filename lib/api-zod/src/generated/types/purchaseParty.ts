@@ -10,13 +10,23 @@ export interface PurchaseParty {
   id: number;
   name: string;
   /** @nullable */
-  phone?: string | null;
-  /** @nullable */
-  city?: string | null;
+  nameUrdu?: string | null;
   /** @nullable */
   address?: string | null;
   /** @nullable */
-  openingBalance?: string | null;
+  city?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  mobile?: string | null;
+  /** @nullable */
+  openingCredit?: string | null;
+  /** @nullable */
+  openingDebit?: string | null;
+  /** @nullable */
+  type?: string | null;
+  /** @nullable */
+  shikanjaId?: number | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -25,13 +25,20 @@ import {
 
 const router: IRouter = Router();
 
-const CreateBody = z.object({
-  name: z.string().min(1, { message: "name is required" }).max(255),
+const PartyBody = z.object({
+  name:          z.string().min(1, { message: "name is required" }).max(255),
+  nameUrdu:      z.string().max(500).nullable().optional(),
+  address:       z.string().max(1000).nullable().optional(),
+  city:          z.string().max(255).nullable().optional(),
+  phone:         z.string().max(50).nullable().optional(),
+  mobile:        z.string().max(50).nullable().optional(),
+  openingCredit: z.coerce.number().min(0).nullable().optional(),
+  openingDebit:  z.coerce.number().min(0).nullable().optional(),
+  type:          z.enum(["cash", "credit"]).nullable().optional(),
+  shikanjaId:    z.coerce.number().int().positive().nullable().optional(),
 });
 
-const UpdateBody = z.object({
-  name: z.string().min(1).max(255).optional(),
-});
+const UpdateBody = PartyBody.partial();
 
 const ListQuery = z.object({
   search: z.string().min(1).optional(),
@@ -52,8 +59,8 @@ router.get(
 router.post(
   "/",
   asyncHandler(async (req, res) => {
-    const body = parseBody(CreateBody, req);
-    res.status(201).json(await createPurchaseParty({ name: body.name }));
+    const body = parseBody(PartyBody, req);
+    res.status(201).json(await createPurchaseParty(body));
   })
 );
 
@@ -72,7 +79,7 @@ router.put(
   asyncHandler(async (req, res) => {
     const id   = parseId(req.params.id);
     const body = parseBody(UpdateBody, req);
-    res.json(await updatePurchaseParty(id, { name: body.name }));
+    res.json(await updatePurchaseParty(id, body));
   })
 );
 

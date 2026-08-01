@@ -1700,10 +1700,15 @@ export const ListPurchasePartiesResponse = zod.object({
   "rows": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "phone": zod.string().nullish(),
-  "city": zod.string().nullish(),
+  "nameUrdu": zod.string().nullish(),
   "address": zod.string().nullish(),
-  "openingBalance": zod.string().nullish(),
+  "city": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "mobile": zod.string().nullish(),
+  "openingCredit": zod.string().nullish(),
+  "openingDebit": zod.string().nullish(),
+  "type": zod.string().nullish(),
+  "shikanjaId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })),
@@ -1716,19 +1721,29 @@ export const ListPurchasePartiesResponse = zod.object({
  */
 export const CreatePurchasePartyBody = zod.object({
   "name": zod.string(),
-  "phone": zod.string().optional(),
-  "city": zod.string().optional(),
+  "nameUrdu": zod.string().optional(),
   "address": zod.string().optional(),
-  "openingBalance": zod.string().optional()
+  "city": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "mobile": zod.string().optional(),
+  "openingCredit": zod.number().optional(),
+  "openingDebit": zod.number().optional(),
+  "type": zod.enum(['cash', 'credit']).optional(),
+  "shikanjaId": zod.number().optional()
 })
 
 export const CreatePurchasePartyResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "phone": zod.string().nullish(),
-  "city": zod.string().nullish(),
+  "nameUrdu": zod.string().nullish(),
   "address": zod.string().nullish(),
-  "openingBalance": zod.string().nullish(),
+  "city": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "mobile": zod.string().nullish(),
+  "openingCredit": zod.string().nullish(),
+  "openingDebit": zod.string().nullish(),
+  "type": zod.string().nullish(),
+  "shikanjaId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -1744,10 +1759,15 @@ export const GetPurchasePartyParams = zod.object({
 export const GetPurchasePartyResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "phone": zod.string().nullish(),
-  "city": zod.string().nullish(),
+  "nameUrdu": zod.string().nullish(),
   "address": zod.string().nullish(),
-  "openingBalance": zod.string().nullish(),
+  "city": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "mobile": zod.string().nullish(),
+  "openingCredit": zod.string().nullish(),
+  "openingDebit": zod.string().nullish(),
+  "type": zod.string().nullish(),
+  "shikanjaId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -1762,19 +1782,29 @@ export const UpdatePurchasePartyParams = zod.object({
 
 export const UpdatePurchasePartyBody = zod.object({
   "name": zod.string(),
-  "phone": zod.string().optional(),
-  "city": zod.string().optional(),
+  "nameUrdu": zod.string().optional(),
   "address": zod.string().optional(),
-  "openingBalance": zod.string().optional()
+  "city": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "mobile": zod.string().optional(),
+  "openingCredit": zod.number().optional(),
+  "openingDebit": zod.number().optional(),
+  "type": zod.enum(['cash', 'credit']).optional(),
+  "shikanjaId": zod.number().optional()
 })
 
 export const UpdatePurchasePartyResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "phone": zod.string().nullish(),
-  "city": zod.string().nullish(),
+  "nameUrdu": zod.string().nullish(),
   "address": zod.string().nullish(),
-  "openingBalance": zod.string().nullish(),
+  "city": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "mobile": zod.string().nullish(),
+  "openingCredit": zod.string().nullish(),
+  "openingDebit": zod.string().nullish(),
+  "type": zod.string().nullish(),
+  "shikanjaId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -1803,11 +1833,16 @@ export const ListSalePartiesResponse = zod.object({
   "rows": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "phone": zod.string().nullish(),
-  "city": zod.string().nullish(),
+  "nameUrdu": zod.string().nullish(),
   "address": zod.string().nullish(),
+  "city": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "mobile": zod.string().nullish(),
   "creditLimit": zod.string().nullish(),
-  "openingBalance": zod.string().nullish(),
+  "openingCredit": zod.string().nullish(),
+  "openingDebit": zod.string().nullish(),
+  "type": zod.string().nullish(),
+  "shikanjaId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })),
@@ -1820,21 +1855,31 @@ export const ListSalePartiesResponse = zod.object({
  */
 export const CreateSalePartyBody = zod.object({
   "name": zod.string(),
-  "phone": zod.string().optional(),
-  "city": zod.string().optional(),
+  "nameUrdu": zod.string().optional(),
   "address": zod.string().optional(),
-  "creditLimit": zod.string().optional(),
-  "openingBalance": zod.string().optional()
+  "city": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "mobile": zod.string().optional(),
+  "creditLimit": zod.number().optional(),
+  "openingCredit": zod.number().optional(),
+  "openingDebit": zod.number().optional(),
+  "type": zod.enum(['cash', 'credit']).optional(),
+  "shikanjaId": zod.number().optional()
 })
 
 export const CreateSalePartyResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "phone": zod.string().nullish(),
-  "city": zod.string().nullish(),
+  "nameUrdu": zod.string().nullish(),
   "address": zod.string().nullish(),
+  "city": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "mobile": zod.string().nullish(),
   "creditLimit": zod.string().nullish(),
-  "openingBalance": zod.string().nullish(),
+  "openingCredit": zod.string().nullish(),
+  "openingDebit": zod.string().nullish(),
+  "type": zod.string().nullish(),
+  "shikanjaId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -1850,11 +1895,16 @@ export const GetSalePartyParams = zod.object({
 export const GetSalePartyResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "phone": zod.string().nullish(),
-  "city": zod.string().nullish(),
+  "nameUrdu": zod.string().nullish(),
   "address": zod.string().nullish(),
+  "city": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "mobile": zod.string().nullish(),
   "creditLimit": zod.string().nullish(),
-  "openingBalance": zod.string().nullish(),
+  "openingCredit": zod.string().nullish(),
+  "openingDebit": zod.string().nullish(),
+  "type": zod.string().nullish(),
+  "shikanjaId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -1869,21 +1919,31 @@ export const UpdateSalePartyParams = zod.object({
 
 export const UpdateSalePartyBody = zod.object({
   "name": zod.string(),
-  "phone": zod.string().optional(),
-  "city": zod.string().optional(),
+  "nameUrdu": zod.string().optional(),
   "address": zod.string().optional(),
-  "creditLimit": zod.string().optional(),
-  "openingBalance": zod.string().optional()
+  "city": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "mobile": zod.string().optional(),
+  "creditLimit": zod.number().optional(),
+  "openingCredit": zod.number().optional(),
+  "openingDebit": zod.number().optional(),
+  "type": zod.enum(['cash', 'credit']).optional(),
+  "shikanjaId": zod.number().optional()
 })
 
 export const UpdateSalePartyResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "phone": zod.string().nullish(),
-  "city": zod.string().nullish(),
+  "nameUrdu": zod.string().nullish(),
   "address": zod.string().nullish(),
+  "city": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "mobile": zod.string().nullish(),
   "creditLimit": zod.string().nullish(),
-  "openingBalance": zod.string().nullish(),
+  "openingCredit": zod.string().nullish(),
+  "openingDebit": zod.string().nullish(),
+  "type": zod.string().nullish(),
+  "shikanjaId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })

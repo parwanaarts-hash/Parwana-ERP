@@ -7,13 +7,14 @@ import { PaginationFooter } from "@/components/master/PaginationFooter";
 import { ConfirmDeleteDialog } from "@/components/master/ConfirmDeleteDialog";
 import { useMasterData } from "@/hooks/useMasterData";
 import { useToast } from "@/hooks/use-toast";
-import { PurchasePartyForm } from "@/components/master/forms/PurchasePartyForm";
+import { PurchasePartyForm, PurchasePartyFormData } from "@/components/master/forms/PurchasePartyForm";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
   useListPurchaseParties, useCreatePurchaseParty, useUpdatePurchaseParty, useDeletePurchaseParty,
-  getListPurchasePartiesQueryKey, PurchasePartyInput, PurchaseParty,
+  getListPurchasePartiesQueryKey, PurchaseParty,
+  useListShikanja, useCreateShikanja, getListShikanjaQueryKey,
 } from "@workspace/api-client-react";
 
 // ── Shared toolbar button ────────────────────────────────────────────────────
@@ -56,11 +57,16 @@ export default function PurchasePartiesPage() {
     offset: page * pageSize,
   });
 
+  // Load all shikanja for name resolution in the register
+  const { data: shikanjaData } = useListShikanja({ limit: 500 });
+
   const createPurchaseParty = useCreatePurchaseParty();
   const updatePurchaseParty = useUpdatePurchaseParty();
   const deletePurchaseParty = useDeletePurchaseParty();
+  const createShikanja = useCreateShikanja();
 
-  const selectedRow = (data?.rows as PurchaseParty[] | undefined)?.find((r) => r.id === selectedId);
+  const rows = (data?.rows as PurchaseParty[] | undefined) ?? [];
+  const selectedRow = rows.find((r) => r.id === selectedId);
   const isSaving = createPurchaseParty.isPending || updatePurchaseParty.isPending;
 
   // Keyboard shortcuts
@@ -78,6 +84,29 @@ export default function PurchasePartiesPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedId, mode, exitForm]);
 
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+  const shikanjaNameById = (id: number | null | undefined): string => {
+    if (!id) return "—";
+    return shikanjaData?.rows?.find((s) => s.id === id)?.name ?? "—";
+  };
+
+  const shikanjaNameForRow = (row: PurchaseParty): string =>
+    shikanjaNameById(row.shikanjaId ?? null);
+
+  /** Resolve a shikanja display name → ID, creating if new (case-insensitive dedup). */
+  const resolveShikanjaId = async (name: string): Promise<number | null> => {
+    const trimmed = name.trim();
+    if (!trimmed) return null;
+    const existing = shikanjaData?.rows?.find(
+      (s) => s.name.trim().toLowerCase() === trimmed.toLowerCase()
+    );
+    if (existing) return existing.id;
+    // Create new shikanja
+    const created = await createShikanja.mutateAsync({ data: { name: trimmed } });
+    queryClient.invalidateQueries({ queryKey: getListShikanjaQueryKey() });
+    return created.id;
+  };
+
   // ── Handlers ────────────────────────────────────────────────────────────────
   const handleSearch = () => { setSearch(searchInput); setPage(0); };
   const handleRefresh = () => {
@@ -92,9 +121,24 @@ export default function PurchasePartiesPage() {
     if (form) form.requestSubmit();
   };
 
-  const onSubmit = (formData: PurchasePartyInput) => {
+  const onSubmit = async (formData: PurchasePartyFormData) => {
+    const shikanjaId = await resolveShikanjaId(formData.shikanjaName ?? "");
+
+    const payload = {
+      name:          formData.name,
+      nameUrdu:      formData.nameUrdu      || undefined,
+      address:       formData.address       || undefined,
+      city:          formData.city          || undefined,
+      phone:         formData.phone         || undefined,
+      mobile:        formData.mobile        || undefined,
+      openingCredit: formData.openingCredit  ? Number(formData.openingCredit)  : undefined,
+      openingDebit:  formData.openingDebit   ? Number(formData.openingDebit)   : undefined,
+      type:          (formData.type as "cash" | "credit") || undefined,
+      shikanjaId:    shikanjaId ?? undefined,
+    };
+
     if (mode === "add") {
-      createPurchaseParty.mutate({ data: formData }, {
+      createPurchaseParty.mutate({ data: payload }, {
         onSuccess: () => {
           toast({ title: "Success", description: "Purchase Party created." });
           queryClient.invalidateQueries({ queryKey: getListPurchasePartiesQueryKey() });
@@ -102,10 +146,10 @@ export default function PurchasePartiesPage() {
           startAdd();
         },
         onError: (err: any) =>
-          toast({ title: "Error", description: err.message || "Failed to create purchase party.", variant: "destructive" }),
+          toast({ title: "Error", description: err.message || "Failed to create.", variant: "destructive" }),
       });
     } else if (mode === "edit" && selectedId) {
-      updatePurchaseParty.mutate({ id: selectedId, data: formData }, {
+      updatePurchaseParty.mutate({ id: selectedId, data: payload }, {
         onSuccess: () => {
           toast({ title: "Success", description: "Purchase Party updated." });
           queryClient.invalidateQueries({ queryKey: getListPurchasePartiesQueryKey() });
@@ -113,7 +157,7 @@ export default function PurchasePartiesPage() {
           startAdd();
         },
         onError: (err: any) =>
-          toast({ title: "Error", description: err.message || "Failed to update purchase party.", variant: "destructive" }),
+          toast({ title: "Error", description: err.message || "Failed to update.", variant: "destructive" }),
       });
     }
   };
@@ -129,11 +173,28 @@ export default function PurchasePartiesPage() {
         startAdd();
       },
       onError: (err: any) => {
-        toast({ title: "Error", description: err.message || "Failed to delete purchase party.", variant: "destructive" });
+        toast({ title: "Error", description: err.message || "Failed to delete.", variant: "destructive" });
         setIsDeleteDialogOpen(false);
       },
     });
   };
+
+  // Build initialData for form when editing
+  const formInitialData = mode === "edit" && selectedRow
+    ? {
+        name:          selectedRow.name,
+        nameUrdu:      selectedRow.nameUrdu   ?? "",
+        address:       selectedRow.address    ?? "",
+        city:          selectedRow.city       ?? "",
+        phone:         selectedRow.phone      ?? "",
+        mobile:        selectedRow.mobile     ?? "",
+        openingCredit: selectedRow.openingCredit ?? "",
+        openingDebit:  selectedRow.openingDebit  ?? "",
+        type:          selectedRow.type       ?? "",
+        shikanjaName:  shikanjaNameById(selectedRow.shikanjaId ?? null) === "—"
+                         ? "" : shikanjaNameById(selectedRow.shikanjaId ?? null),
+      }
+    : undefined;
 
   return (
     <div className="flex flex-col h-full w-full bg-background" data-testid="page-purchase-parties">
@@ -203,9 +264,8 @@ export default function PurchasePartiesPage() {
           </h3>
           <PurchasePartyForm
             key={formKey}
-            initialData={mode === "edit" && selectedRow ? {
-              name: selectedRow.name,
-            } : undefined}
+            initialData={formInitialData}
+            currentId={mode === "edit" ? selectedId ?? undefined : undefined}
             onSubmit={onSubmit}
           />
         </div>
@@ -215,35 +275,54 @@ export default function PurchasePartiesPage() {
           <Table>
             <TableHeader className="bg-muted/50 sticky top-0 z-10 shadow-sm">
               <TableRow>
-                <TableHead className="w-16 font-medium text-foreground">Sr. No.</TableHead>
-                <TableHead className="font-medium text-foreground">Name / بنام</TableHead>
+                <TableHead className="w-12 font-medium text-foreground">Sr. No.</TableHead>
+                <TableHead className="w-12 font-medium text-foreground">ID</TableHead>
+                <TableHead className="font-medium text-foreground">Name</TableHead>
+                <TableHead className="font-medium text-foreground">Urdu Name</TableHead>
+                <TableHead className="w-20 font-medium text-foreground">Type</TableHead>
+                <TableHead className="font-medium text-foreground">Shikanja</TableHead>
+                <TableHead className="font-medium text-foreground">City</TableHead>
+                <TableHead className="font-medium text-foreground">Mobile</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i} className="animate-pulse">
-                    {[1, 2].map((j) => (
+                    {[1,2,3,4,5,6,7,8].map((j) => (
                       <TableCell key={j}><div className="h-4 bg-muted rounded w-3/4" /></TableCell>
                     ))}
                   </TableRow>
                 ))
-              ) : (data?.rows as PurchaseParty[] | undefined)?.length === 0 || !data?.rows ? (
+              ) : rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={2} className="h-24 text-center text-muted-foreground" data-testid="text-empty-grid">
+                  <TableCell colSpan={8} className="h-24 text-center text-muted-foreground" data-testid="text-empty-grid">
                     No records found.
                   </TableCell>
                 </TableRow>
               ) : (
-                (data.rows as PurchaseParty[]).map((row, idx) => (
+                rows.map((row, idx) => (
                   <TableRow
                     key={row.id}
                     data-testid={`row-entity-${row.id}`}
                     className={`cursor-pointer transition-colors ${selectedId === row.id ? "bg-muted/80" : ""}`}
                     onClick={() => startEdit(row.id)}
                   >
-                    <TableCell className="text-muted-foreground text-sm w-16">{page * pageSize + idx + 1}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{page * pageSize + idx + 1}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm font-mono">{row.id}</TableCell>
                     <TableCell className="font-medium">{row.name}</TableCell>
+                    <TableCell className="text-sm" dir="rtl">{row.nameUrdu || <span className="text-muted-foreground">—</span>}</TableCell>
+                    <TableCell className="text-sm">
+                      {row.type
+                        ? <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${row.type === "cash" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
+                            {row.type === "cash" ? "Cash" : "Credit"}
+                          </span>
+                        : <span className="text-muted-foreground">—</span>
+                      }
+                    </TableCell>
+                    <TableCell className="text-sm">{shikanjaNameForRow(row)}</TableCell>
+                    <TableCell className="text-sm">{row.city || <span className="text-muted-foreground">—</span>}</TableCell>
+                    <TableCell className="text-sm">{row.mobile || <span className="text-muted-foreground">—</span>}</TableCell>
                   </TableRow>
                 ))
               )}

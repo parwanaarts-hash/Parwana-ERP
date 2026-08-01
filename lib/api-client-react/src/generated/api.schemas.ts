@@ -13,23 +13,46 @@ export interface PurchaseParty {
   id: number;
   name: string;
   /** @nullable */
-  phone?: string | null;
-  /** @nullable */
-  city?: string | null;
+  nameUrdu?: string | null;
   /** @nullable */
   address?: string | null;
   /** @nullable */
-  openingBalance?: string | null;
+  city?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  mobile?: string | null;
+  /** @nullable */
+  openingCredit?: string | null;
+  /** @nullable */
+  openingDebit?: string | null;
+  /** @nullable */
+  type?: string | null;
+  /** @nullable */
+  shikanjaId?: number | null;
   createdAt: string;
   updatedAt: string;
 }
 
+export type PurchasePartyInputType = typeof PurchasePartyInputType[keyof typeof PurchasePartyInputType];
+
+
+export const PurchasePartyInputType = {
+  cash: 'cash',
+  credit: 'credit',
+} as const;
+
 export interface PurchasePartyInput {
   name: string;
-  phone?: string;
-  city?: string;
+  nameUrdu?: string;
   address?: string;
-  openingBalance?: string;
+  city?: string;
+  phone?: string;
+  mobile?: string;
+  openingCredit?: number;
+  openingDebit?: number;
+  type?: PurchasePartyInputType;
+  shikanjaId?: number;
 }
 
 export interface PurchasePartyList {
@@ -41,26 +64,49 @@ export interface SaleParty {
   id: number;
   name: string;
   /** @nullable */
-  phone?: string | null;
-  /** @nullable */
-  city?: string | null;
+  nameUrdu?: string | null;
   /** @nullable */
   address?: string | null;
   /** @nullable */
+  city?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  mobile?: string | null;
+  /** @nullable */
   creditLimit?: string | null;
   /** @nullable */
-  openingBalance?: string | null;
+  openingCredit?: string | null;
+  /** @nullable */
+  openingDebit?: string | null;
+  /** @nullable */
+  type?: string | null;
+  /** @nullable */
+  shikanjaId?: number | null;
   createdAt: string;
   updatedAt: string;
 }
 
+export type SalePartyInputType = typeof SalePartyInputType[keyof typeof SalePartyInputType];
+
+
+export const SalePartyInputType = {
+  cash: 'cash',
+  credit: 'credit',
+} as const;
+
 export interface SalePartyInput {
   name: string;
-  phone?: string;
-  city?: string;
+  nameUrdu?: string;
   address?: string;
-  creditLimit?: string;
-  openingBalance?: string;
+  city?: string;
+  phone?: string;
+  mobile?: string;
+  creditLimit?: number;
+  openingCredit?: number;
+  openingDebit?: number;
+  type?: SalePartyInputType;
+  shikanjaId?: number;
 }
 
 export interface SalePartyList {

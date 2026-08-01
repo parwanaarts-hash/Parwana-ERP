@@ -26,12 +26,19 @@ import {
 export type PurchasePartyRow = typeof purchasePartiesTable.$inferSelect;
 
 export interface CreatePurchasePartyInput {
-  name: string;
+  name:          string;
+  nameUrdu?:     string | null;
+  address?:      string | null;
+  city?:         string | null;
+  phone?:        string | null;
+  mobile?:       string | null;
+  openingCredit?: number | null;
+  openingDebit?:  number | null;
+  type?:         string | null;
+  shikanjaId?:   number | null;
 }
 
-export interface UpdatePurchasePartyInput {
-  name?: string;
-}
+export type UpdatePurchasePartyInput = Partial<CreatePurchasePartyInput>;
 
 export interface ListPurchasePartiesInput {
   search?: string;
@@ -82,6 +89,25 @@ function validateName(name: string): void {
   }
 }
 
+function fmtMoney(v: number): string {
+  return v.toFixed(2);
+}
+
+function buildValues(input: CreatePurchasePartyInput) {
+  return {
+    name:          input.name.trim(),
+    nameUrdu:      input.nameUrdu    ?? null,
+    address:       input.address     ?? null,
+    city:          input.city        ?? null,
+    phone:         input.phone       ?? null,
+    mobile:        input.mobile      ?? null,
+    openingCredit: input.openingCredit != null ? fmtMoney(input.openingCredit) : null,
+    openingDebit:  input.openingDebit  != null ? fmtMoney(input.openingDebit)  : null,
+    type:          input.type        ?? null,
+    shikanjaId:    input.shikanjaId  ?? null,
+  };
+}
+
 async function fetchLocked(tx: Tx, id: number): Promise<PurchasePartyRow> {
   const rows = await tx
     .select()
@@ -104,7 +130,7 @@ export async function createPurchaseParty(
   return db.transaction(async (tx) => {
     const rows = await tx
       .insert(purchasePartiesTable)
-      .values({ name: input.name.trim() })
+      .values(buildValues(input))
       .returning();
     return rows[0]!;
   });
@@ -123,12 +149,21 @@ export async function updatePurchaseParty(
   return db.transaction(async (tx) => {
     await fetchLocked(tx, id);
 
+    const set: Record<string, unknown> = { updatedAt: new Date() };
+    if (input.name          !== undefined) set["name"]          = input.name!.trim();
+    if (input.nameUrdu      !== undefined) set["nameUrdu"]      = input.nameUrdu ?? null;
+    if (input.address       !== undefined) set["address"]       = input.address  ?? null;
+    if (input.city          !== undefined) set["city"]          = input.city     ?? null;
+    if (input.phone         !== undefined) set["phone"]         = input.phone    ?? null;
+    if (input.mobile        !== undefined) set["mobile"]        = input.mobile   ?? null;
+    if (input.openingCredit !== undefined) set["openingCredit"] = input.openingCredit != null ? fmtMoney(input.openingCredit) : null;
+    if (input.openingDebit  !== undefined) set["openingDebit"]  = input.openingDebit  != null ? fmtMoney(input.openingDebit)  : null;
+    if (input.type          !== undefined) set["type"]          = input.type     ?? null;
+    if (input.shikanjaId    !== undefined) set["shikanjaId"]    = input.shikanjaId ?? null;
+
     const rows = await tx
       .update(purchasePartiesTable)
-      .set({
-        ...(input.name !== undefined && { name: input.name.trim() }),
-        updatedAt: new Date(),
-      })
+      .set(set as any)
       .where(eq(purchasePartiesTable.id, id))
       .returning();
     return rows[0]!;
@@ -143,7 +178,6 @@ export async function deletePurchaseParty(id: number): Promise<void> {
   await db.transaction(async (tx) => {
     await fetchLocked(tx, id);
 
-    // Check all referencing tables in parallel.
     const [pgpCount, pbCount, ppCount, ledgerCount] = await Promise.all([
       tx.select({ n: count() }).from(purchaseGatePassesTable)
         .where(eq(purchaseGatePassesTable.purchasePartyId, id))
@@ -190,7 +224,10 @@ export async function listPurchaseParties(
   const offset = input.offset ?? 0;
 
   const where = input.search
-    ? ilike(purchasePartiesTable.name, `%${input.search}%`)
+    ? or(
+        ilike(purchasePartiesTable.name, `%${input.search}%`),
+        ilike(purchasePartiesTable.city, `%${input.search}%`),
+      )
     : undefined;
 
   const [countResult, rows] = await Promise.all([

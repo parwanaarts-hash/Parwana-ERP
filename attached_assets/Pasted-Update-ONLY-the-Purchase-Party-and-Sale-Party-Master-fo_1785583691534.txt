@@ -1,0 +1,120 @@
+Update ONLY the Purchase Party and Sale Party Master forms.
+
+Do NOT modify unrelated modules or pages.
+
+The previous implementation missed several finalized party fields. Add/fix the following requirements in BOTH Purchase Party and Sale Party.
+
+PARTY FORM FIELDS
+
+1. ID
+   - Visible ID field.
+   - Show the existing/current party ID/code.
+   - Do not use the visible table Sr. No. as the party ID.
+
+2. Party Name (English)
+   - English party name field.
+
+3. Party Name (Urdu)
+   - Urdu party name field.
+   - Keep Urdu text only for printed output/use where required.
+   - Software interface itself remains English.
+
+4. Address
+
+5. City
+
+6. Phone #
+
+7. Mobile #
+
+8. Opening Credit
+
+9. Opening Debit
+
+10. Type
+   Dropdown:
+   - Cash
+   - Credit
+
+11. Shikanja
+   Shikanja means the transport/delivery company that delivers the party's goods.
+
+   The Shikanja field must:
+   - Show names already saved in the Shikanja Master.
+   - Allow selecting an existing Shikanja.
+   - Work for BOTH Purchase Parties and Sale Parties.
+   - The selected Shikanja must be saved against the party.
+   - This relationship will later be used when printing bills/documents so the party's Shikanja name can be mentioned.
+
+   IMPORTANT:
+   If a required Shikanja does NOT already exist in the Shikanja Master:
+   - Allow the user to type a new Shikanja name directly in the party form.
+   - When the party is saved, create/save that Shikanja in the Shikanja Master and associate it with the current party.
+   - Avoid creating duplicate Shikanja records if the same name already exists.
+
+PURCHASE PARTY ONLY
+- Keep the existing Purchase Party-specific Main A/C field ONLY if it already exists in the current schema/API.
+- Do not invent a new database field.
+
+SALE PARTY
+- Do not add Main A/C unless it already exists in the existing schema/API.
+
+UI LAYOUT
+
+Keep the finalized Category Master layout:
+
+TOP:
+One single toolbar containing:
+Refresh | Save | Update | Delete | Exit | Search
+
+SECOND:
+Party Entry Form.
+
+THIRD:
+Party Register/Table.
+
+REGISTER:
+Show a sequential Sr. No.:
+1, 2, 3, 4...
+
+Do NOT use database ID as Sr. No.
+
+The register should also show useful party information, including:
+- Sr. No.
+- ID
+- Party Name (English)
+- Party Name (Urdu)
+- Type
+- Shikanja
+- City
+- Mobile
+
+AUTO NEW ENTRY:
+- Form opens directly ready for a new party.
+- No Ctrl+F2.
+- No New Entry button.
+- After Save, automatically prepare the form for the next new party.
+
+IMPORTANT:
+Before changing anything, inspect:
+- PurchaseParty schema/API
+- SaleParty schema/API
+- PurchasePartyForm
+- SalePartyForm
+- Shikanja schema/API/form
+- CategoriesPage.tsx finalized layout
+
+Use the existing database/API architecture wherever possible.
+
+If the current database/API does not yet support Urdu name, type, shikanja relation, ID behavior, or the required fields, make the minimum necessary schema/API changes to support these finalized requirements.
+
+Do NOT remove existing working functionality.
+
+After implementation:
+- Run TypeScript check.
+- Verify Purchase Party.
+- Verify Sale Party.
+- Verify existing Shikanja selection.
+- Verify manually entered new Shikanja is saved and linked.
+- Verify no duplicate Shikanja is created unnecessarily.
+- Stop after this task is complete.

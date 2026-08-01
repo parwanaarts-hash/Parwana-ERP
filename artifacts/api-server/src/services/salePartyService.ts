@@ -10,7 +10,7 @@
  * referenced by any gate pass, bill, payment, or ledger entry.
  */
 
-import { count, desc, eq, ilike } from "drizzle-orm";
+import { count, desc, eq, ilike, or } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   ledgerEntriesTable,
@@ -29,14 +29,20 @@ import {
 export type SalePartyRow = typeof salePartiesTable.$inferSelect;
 
 export interface CreateSalePartyInput {
-  name:         string;
-  creditLimit?: number | null;
+  name:          string;
+  nameUrdu?:     string | null;
+  address?:      string | null;
+  city?:         string | null;
+  phone?:        string | null;
+  mobile?:       string | null;
+  creditLimit?:  number | null;
+  openingCredit?: number | null;
+  openingDebit?:  number | null;
+  type?:         string | null;
+  shikanjaId?:   number | null;
 }
 
-export interface UpdateSalePartyInput {
-  name?:        string;
-  creditLimit?: number | null;
-}
+export type UpdateSalePartyInput = Partial<CreateSalePartyInput>;
 
 export interface ListSalePartiesInput {
   search?: string;
@@ -87,16 +93,24 @@ function validateName(name: string): void {
   }
 }
 
-function validateCreditLimit(creditLimit: number | null | undefined): void {
-  if (creditLimit != null && (!isFinite(creditLimit) || creditLimit < 0)) {
-    throw new SalePartyValidationError(
-      "creditLimit must be a non-negative finite number when provided."
-    );
-  }
-}
-
 function fmtMoney(v: number): string {
   return v.toFixed(2);
+}
+
+function buildValues(input: CreateSalePartyInput) {
+  return {
+    name:          input.name.trim(),
+    nameUrdu:      input.nameUrdu    ?? null,
+    address:       input.address     ?? null,
+    city:          input.city        ?? null,
+    phone:         input.phone       ?? null,
+    mobile:        input.mobile      ?? null,
+    creditLimit:   input.creditLimit   != null ? fmtMoney(input.creditLimit)   : null,
+    openingCredit: input.openingCredit != null ? fmtMoney(input.openingCredit) : null,
+    openingDebit:  input.openingDebit  != null ? fmtMoney(input.openingDebit)  : null,
+    type:          input.type        ?? null,
+    shikanjaId:    input.shikanjaId  ?? null,
+  };
 }
 
 async function fetchLocked(tx: Tx, id: number): Promise<SalePartyRow> {
@@ -117,15 +131,11 @@ export async function createSaleParty(
   input: CreateSalePartyInput
 ): Promise<SalePartyRow> {
   validateName(input.name);
-  validateCreditLimit(input.creditLimit);
 
   return db.transaction(async (tx) => {
     const rows = await tx
       .insert(salePartiesTable)
-      .values({
-        name:        input.name.trim(),
-        creditLimit: input.creditLimit != null ? fmtMoney(input.creditLimit) : null,
-      })
+      .values(buildValues(input))
       .returning();
     return rows[0]!;
   });
@@ -140,20 +150,26 @@ export async function updateSaleParty(
   input: UpdateSalePartyInput
 ): Promise<SalePartyRow> {
   if (input.name !== undefined) validateName(input.name);
-  validateCreditLimit(input.creditLimit);
 
   return db.transaction(async (tx) => {
     await fetchLocked(tx, id);
 
+    const set: Record<string, unknown> = { updatedAt: new Date() };
+    if (input.name          !== undefined) set["name"]          = input.name!.trim();
+    if (input.nameUrdu      !== undefined) set["nameUrdu"]      = input.nameUrdu     ?? null;
+    if (input.address       !== undefined) set["address"]       = input.address      ?? null;
+    if (input.city          !== undefined) set["city"]          = input.city         ?? null;
+    if (input.phone         !== undefined) set["phone"]         = input.phone        ?? null;
+    if (input.mobile        !== undefined) set["mobile"]        = input.mobile       ?? null;
+    if (input.creditLimit   !== undefined) set["creditLimit"]   = input.creditLimit   != null ? fmtMoney(input.creditLimit)   : null;
+    if (input.openingCredit !== undefined) set["openingCredit"] = input.openingCredit != null ? fmtMoney(input.openingCredit) : null;
+    if (input.openingDebit  !== undefined) set["openingDebit"]  = input.openingDebit  != null ? fmtMoney(input.openingDebit)  : null;
+    if (input.type          !== undefined) set["type"]          = input.type         ?? null;
+    if (input.shikanjaId    !== undefined) set["shikanjaId"]    = input.shikanjaId   ?? null;
+
     const rows = await tx
       .update(salePartiesTable)
-      .set({
-        ...(input.name        !== undefined && { name: input.name.trim() }),
-        ...(input.creditLimit !== undefined && {
-          creditLimit: input.creditLimit != null ? fmtMoney(input.creditLimit) : null,
-        }),
-        updatedAt: new Date(),
-      })
+      .set(set as any)
       .where(eq(salePartiesTable.id, id))
       .returning();
     return rows[0]!;
@@ -221,7 +237,10 @@ export async function listSaleParties(
   const offset = input.offset ?? 0;
 
   const where = input.search
-    ? ilike(salePartiesTable.name, `%${input.search}%`)
+    ? or(
+        ilike(salePartiesTable.name, `%${input.search}%`),
+        ilike(salePartiesTable.city, `%${input.search}%`),
+      )
     : undefined;
 
   const [countResult, rows] = await Promise.all([
