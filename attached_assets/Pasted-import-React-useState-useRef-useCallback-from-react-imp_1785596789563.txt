@@ -1,0 +1,421 @@
+import React, { useState, useRef, useCallback } from "react";
+import {
+  RefreshCw,
+  Save,
+  Pencil,
+  Trash2,
+  LogOut,
+  Settings,
+  UserCircle,
+  Plus,
+} from "lucide-react";
+
+// ---- sample data (replace with existing Sale GP party/product loading logic) ----
+const SALE_PARTIES = [
+  "Ahsan Idrees Gujrahwalah",
+  "Bilal Traders Faisalabad",
+  "Noor Fabrics Lahore",
+];
+
+// meterPerUnit mirrors the existing Sale GP calculation logic (qty * per-unit meter).
+const PRODUCTS = [
+  { name: "Lawn White Contrast Print Shalwar 2P", scale: "Set", meterPerUnit: 30 },
+  { name: "Lawn Multi Plain Shalwar 2P", scale: "Set", meterPerUnit: 30 },
+  { name: "Lawn Skin Rotri Print Shalwar 2P", scale: "Set", meterPerUnit: 30 },
+  { name: "Lawn White Print Shirt", scale: "Pcs", meterPerUnit: 12 },
+  { name: "Cotton Plain Kurta", scale: "Pcs", meterPerUnit: 15 },
+];
+
+const num = (v) => (v === "" || v === undefined || v === null ? 0 : Number(v));
+const emptyEntry = () => ({
+  product: null,
+  qty: "",
+  rate: "",
+  discRate: "",
+});
+
+export default function SaleGatePass() {
+  // --- existing Sale GP header state (keep wired to existing GP numbering / API) ---
+  const [gpNo] = useState("Auto");
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [saleParty, setSaleParty] = useState("");
+  const [remarks, setRemarks] = useState("");
+
+  const [rows, setRows] = useState([]); // committed items list (existing Sale GP items)
+
+  // --- fixed entry bar state ---
+  const [entry, setEntry] = useState(emptyEntry());
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [highlightIndex, setHighlightIndex] = useState(0);
+
+  const productInputRef = useRef(null);
+  const qtyRef = useRef(null);
+  const rateRef = useRef(null);
+  const discRef = useRef(null);
+
+  const filteredProducts = searchTerm
+    ? PRODUCTS.filter((p) =>
+        searchTerm
+          .trim()
+          .split(/\s+/)
+          .every((word) => p.name.toLowerCase().includes(word.toLowerCase()))
+      )
+    : PRODUCTS;
+
+  const selectProduct = (product) => {
+    setEntry((prev) => ({ ...prev, product }));
+    setSearchTerm(product.name);
+    setShowSuggestions(false);
+    setTimeout(() => qtyRef.current?.focus(), 0);
+  };
+
+  const handleProductKeyDown = (e) => {
+    if (!showSuggestions) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightIndex((i) => Math.min(i + 1, filteredProducts.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (filteredProducts[highlightIndex]) selectProduct(filteredProducts[highlightIndex]);
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
+    }
+  };
+
+  // --- existing Sale GP calculation logic (meter = qty * meterPerUnit, amount = meter * rate) ---
+  const meter = entry.product ? num(entry.qty) * entry.product.meterPerUnit : 0;
+  const amount = meter * num(entry.rate);
+  const discRs = amount * (num(entry.discRate) / 100);
+  const netBill = amount - discRs;
+
+  const canCommit = entry.product && num(entry.qty) > 0 && num(entry.rate) >= 0;
+
+  const commitEntry = useCallback(() => {
+    if (!canCommit) return;
+    setRows((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        product: entry.product.name,
+        scale: entry.product.scale,
+        qty: num(entry.qty),
+        meter,
+        rate: num(entry.rate),
+        discRate: num(entry.discRate),
+        discRs,
+        amount,
+        netBill,
+      },
+    ]);
+    setEntry(emptyEntry());
+    setSearchTerm("");
+    setTimeout(() => productInputRef.current?.focus(), 0);
+  }, [canCommit, entry, meter, amount, discRs, netBill]);
+
+  const deleteRow = (id) => setRows((prev) => prev.filter((r) => r.id !== id));
+
+  const totals = rows.reduce(
+    (acc, r) => {
+      acc.qty += r.qty;
+      acc.meter += r.meter;
+      acc.sub += r.amount;
+      acc.disc += r.discRs;
+      return acc;
+    },
+    { qty: 0, meter: 0, sub: 0, disc: 0 }
+  );
+  const grandTotal = totals.sub - totals.disc;
+
+  const toolbarBtn =
+    "flex flex-col items-center gap-1.5 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors";
+  const inputCls =
+    "w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500";
+  const labelCls = "block text-xs font-medium text-gray-500 mb-1";
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans p-6">
+      <div className="max-w-7xl mx-auto bg-white border border-gray-200 rounded-lg overflow-hidden">
+        {/* Header */}
+        <div className="px-6 py-4 flex items-center justify-between border-b border-gray-200">
+          <h1 className="text-xl font-semibold text-gray-900">Sale Gate Pass</h1>
+          <div className="flex items-center gap-4 text-sm text-gray-500">
+            <span>
+              {new Date(date).toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+            <Settings size={18} className="cursor-pointer hover:text-gray-800" />
+            <UserCircle size={20} className="cursor-pointer hover:text-gray-800" />
+          </div>
+        </div>
+
+        {/* Breadcrumb */}
+        <div className="px-6 pt-3 text-sm text-gray-500 flex items-center gap-2">
+          <span>Home</span>
+          <span>{">"}</span>
+          <span>Stock</span>
+          <span>{">"}</span>
+          <span>Sales</span>
+          <span>{">"}</span>
+          <span className="text-gray-800 font-medium">Gate Pass</span>
+        </div>
+
+        {/* Toolbar — matches Purchase GP toolbar, no J.V / New Party (not part of existing Sale GP) */}
+        <div className="mx-6 mt-4 border border-gray-200 rounded-lg px-2 py-1 flex items-center divide-x divide-gray-100">
+          <button className={toolbarBtn}>
+            <RefreshCw size={18} className="text-blue-600" />
+            <span className="text-xs">Refresh</span>
+          </button>
+          <button className={toolbarBtn}>
+            <Save size={18} className="text-green-600" />
+            <span className="text-xs">Save</span>
+          </button>
+          <button className={toolbarBtn}>
+            <Pencil size={18} className="text-amber-600" />
+            <span className="text-xs">Update</span>
+          </button>
+          <button className={toolbarBtn}>
+            <Trash2 size={18} className="text-red-600" />
+            <span className="text-xs">Delete</span>
+          </button>
+          <button className={toolbarBtn}>
+            <LogOut size={18} className="text-gray-500" />
+            <span className="text-xs">Exit</span>
+          </button>
+        </div>
+        <div className="mx-6 mt-2 flex items-center gap-3 text-xs text-gray-500">
+          <span className="border border-gray-300 rounded px-1.5 py-0.5 bg-gray-100">Ctrl+S</span>
+          <span>Save</span>
+          <span className="border border-gray-300 rounded px-1.5 py-0.5 bg-gray-100">Del</span>
+          <span>Delete</span>
+          <span className="border border-gray-300 rounded px-1.5 py-0.5 bg-gray-100">Esc</span>
+          <span>Exit</span>
+        </div>
+
+        {/* Header fields — existing Sale GP fields only (GP#, Date, Sale Party, Remarks) */}
+        <div className="px-6 py-5 grid grid-cols-4 gap-4">
+          <div>
+            <label className={labelCls}>GP #</label>
+            <input value={gpNo} readOnly className={`${inputCls} bg-gray-50 text-gray-400`} />
+          </div>
+          <div>
+            <label className={labelCls}>Date</label>
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Sale Party</label>
+            <select value={saleParty} onChange={(e) => setSaleParty(e.target.value)} className={inputCls}>
+              <option value="">Select party...</option>
+              {SALE_PARTIES.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Remarks</label>
+            <input
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              placeholder="Optional..."
+              className={inputCls}
+            />
+          </div>
+        </div>
+
+        {/* FIXED ENTRY BAR — same interaction pattern as Purchase GP: autocomplete product search, auto meter, Enter-to-advance, Enter-to-commit */}
+        <div className="mx-6 mb-5 border border-blue-200 bg-blue-50/40 rounded-lg p-4">
+          <div className="grid grid-cols-12 gap-3 items-end">
+            <div className="col-span-4 relative">
+              <label className={labelCls}>Product</label>
+              <input
+                ref={productInputRef}
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setEntry((prev) => ({ ...prev, product: null }));
+                  setShowSuggestions(true);
+                  setHighlightIndex(0);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 120)}
+                onKeyDown={handleProductKeyDown}
+                placeholder="Type to search... e.g. print, white"
+                className={inputCls}
+              />
+              {showSuggestions && filteredProducts.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-56 overflow-auto">
+                  {filteredProducts.map((p, i) => (
+                    <div
+                      key={p.name}
+                      onMouseDown={() => selectProduct(p)}
+                      onMouseEnter={() => setHighlightIndex(i)}
+                      className={`px-3 py-2 text-sm cursor-pointer ${
+                        i === highlightIndex ? "bg-blue-100 text-blue-800" : "hover:bg-gray-50"
+                      }`}
+                    >
+                      {p.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="col-span-1">
+              <label className={labelCls}>Qty</label>
+              <input
+                ref={qtyRef}
+                type="number"
+                value={entry.qty}
+                onChange={(e) => setEntry((prev) => ({ ...prev, qty: e.target.value }))}
+                onKeyDown={(e) => e.key === "Enter" && rateRef.current?.focus()}
+                className={inputCls}
+              />
+            </div>
+
+            <div className="col-span-1">
+              <label className={labelCls}>Meter</label>
+              <input value={meter} readOnly className={`${inputCls} bg-gray-100 text-gray-500`} />
+            </div>
+
+            <div className="col-span-1">
+              <label className={labelCls}>Rate</label>
+              <input
+                ref={rateRef}
+                type="number"
+                value={entry.rate}
+                onChange={(e) => setEntry((prev) => ({ ...prev, rate: e.target.value }))}
+                onKeyDown={(e) => e.key === "Enter" && discRef.current?.focus()}
+                className={inputCls}
+              />
+            </div>
+
+            <div className="col-span-1">
+              <label className={labelCls}>Disc %</label>
+              <input
+                ref={discRef}
+                type="number"
+                value={entry.discRate}
+                onChange={(e) => setEntry((prev) => ({ ...prev, discRate: e.target.value }))}
+                onKeyDown={(e) => e.key === "Enter" && commitEntry()}
+                className={inputCls}
+              />
+            </div>
+
+            <div className="col-span-2">
+              <label className={labelCls}>Total</label>
+              <div className="border border-gray-200 rounded-md px-3 py-2 text-sm font-semibold text-blue-700 bg-white">
+                {netBill.toLocaleString()}
+              </div>
+            </div>
+
+            <div className="col-span-2">
+              <button
+                onClick={commitEntry}
+                disabled={!canCommit}
+                className="w-full flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-md px-3 py-2 text-sm font-medium transition-colors"
+              >
+                <Plus size={15} />
+                Add (Enter)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Items list + side calculation panel — mirrors Purchase GP layout */}
+        <div className="px-6 pb-6 flex gap-5">
+          <div className="flex-1 border border-gray-200 rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 text-left">
+                  <th className="px-3 py-2 font-medium w-8">#</th>
+                  <th className="px-3 py-2 font-medium">Description</th>
+                  <th className="px-3 py-2 font-medium w-16">Scale</th>
+                  <th className="px-3 py-2 font-medium w-16">Qty</th>
+                  <th className="px-3 py-2 font-medium w-20">Meter</th>
+                  <th className="px-3 py-2 font-medium w-20">Rate</th>
+                  <th className="px-3 py-2 font-medium w-24 text-right">Amount</th>
+                  <th className="px-3 py-2 font-medium w-16">Disc %</th>
+                  <th className="px-3 py-2 font-medium w-24 text-right">Net Bill</th>
+                  <th className="px-2 py-2 w-8"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.length === 0 && (
+                  <tr>
+                    <td colSpan={10} className="px-4 py-8 text-center text-gray-400">
+                      No items entered yet — use the bar above to add products.
+                    </td>
+                  </tr>
+                )}
+                {rows.map((r, idx) => (
+                  <tr key={r.id} className="border-b border-gray-100 last:border-0">
+                    <td className="px-3 py-2 text-gray-400">{idx + 1}</td>
+                    <td className="px-3 py-2">{r.product}</td>
+                    <td className="px-3 py-2 text-gray-500">{r.scale}</td>
+                    <td className="px-3 py-2">{r.qty}</td>
+                    <td className="px-3 py-2">{r.meter}</td>
+                    <td className="px-3 py-2">{r.rate}</td>
+                    <td className="px-3 py-2 text-right font-medium text-gray-700">
+                      {r.amount.toLocaleString()}
+                    </td>
+                    <td className="px-3 py-2">{r.discRate}%</td>
+                    <td className="px-3 py-2 text-right font-medium text-gray-900">
+                      {r.netBill.toLocaleString()}
+                    </td>
+                    <td className="px-2 py-2 text-center">
+                      <button
+                        onClick={() => deleteRow(r.id)}
+                        className="text-gray-300 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Live price calculation side panel */}
+          <div className="w-64 shrink-0 border border-gray-200 rounded-lg p-5 bg-gray-50 flex flex-col gap-4 h-fit">
+            <div>
+              <div className="text-xs text-gray-500">QTY</div>
+              <div className="text-2xl font-semibold text-gray-900">{totals.qty}</div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Meters</div>
+              <div className="text-2xl font-semibold text-green-600">{totals.meter}</div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Sub</div>
+              <div className="text-2xl font-semibold text-gray-900">
+                {totals.sub.toLocaleString()}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Disc</div>
+              <div className="text-2xl font-semibold text-gray-900">
+                {totals.disc.toLocaleString()}
+              </div>
+            </div>
+            <div className="pt-3 border-t border-gray-200">
+              <div className="text-xs text-gray-500">Total</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {grandTotal.toLocaleString()}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
