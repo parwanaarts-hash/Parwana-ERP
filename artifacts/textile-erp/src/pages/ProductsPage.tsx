@@ -19,8 +19,9 @@ import {
   useUpdateProduct,
   useDeleteProduct,
   getListProductsQueryKey,
+  useListCategories,
 } from "@workspace/api-client-react";
-import type { Product, ProductInput } from "@workspace/api-client-react";
+import type { Product, ProductInput, Category } from "@workspace/api-client-react";
 import { RefreshCcw, Save, Pencil, Trash2, Printer, LogOut } from "lucide-react";
 
 // ── Scale options ────────────────────────────────────────────────────────────
@@ -31,7 +32,6 @@ const SCALE_OPTIONS = [
   { value: "Than", label: "تھان" },
 ];
 
-const CATEGORY_OPTIONS = ["Shalwar", "Kameez", "Dupatta", "Embroidery"];
 
 const scaleLabel = (val: string) =>
   SCALE_OPTIONS.find((o) => o.value === val)?.label ?? val;
@@ -99,6 +99,7 @@ export default function ProductsPage() {
   const [page, setPage]                   = useState(0);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [msg, setMsg]                     = useState<{ text: string; err?: boolean } | null>(null);
+  const [mainCategoryId, setMainCategoryId] = useState<number | null>(null);
 
   const PAGE_SIZE    = 50;
   const firstFieldRef = useRef<HTMLInputElement>(null);
@@ -112,6 +113,14 @@ export default function ProductsPage() {
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
+
+  // ── Category data for Main → Sub selection ───────────────────────────────
+  const { data: mainCatsData } = useListCategories({ limit: 500, offset: 0, topLevelOnly: true });
+  const { data: allCatsData }  = useListCategories({ limit: 500, offset: 0 });
+  const mainCategories  = (mainCatsData?.rows  as Category[] | undefined) ?? [];
+  const subCategories   = (allCatsData?.rows   as Category[] | undefined)?.filter(
+    (c: Category) => c.parentId === mainCategoryId
+  ) ?? [];
 
   const rows  = data?.rows  ?? [];
   const total = data?.total ?? 0;
@@ -142,12 +151,20 @@ export default function ProductsPage() {
       rate:        row.rate        ?? "",
       remarks:     row.remarks     ?? "",
     });
+    // Derive main category from stored sub-category name
+    if (row.category && allCatsData?.rows) {
+      const subCat = (allCatsData.rows as Category[]).find((c: Category) => c.name === row.category);
+      setMainCategoryId(subCat?.parentId ?? null);
+    } else {
+      setMainCategoryId(null);
+    }
   }
 
   function resetToNew() {
     setMode("new");
     setSelectedId(null);
     setForm(EMPTY);
+    setMainCategoryId(null);
     setTimeout(() => firstFieldRef.current?.focus(), 50);
   }
 
@@ -347,17 +364,37 @@ export default function ProductsPage() {
         {/* Row 2: Category | Scale | QTY | تھان | میٹر | Rate | Remarks */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <label className={LBL}>Category:</label>
+            <label className={LBL}>Main Category:</label>
+            <select
+              className={`${SEL} w-36`}
+              value={mainCategoryId ?? ""}
+              data-testid="select-product-maincategory"
+              onChange={(e) => {
+                const val = e.target.value ? Number(e.target.value) : null;
+                setMainCategoryId(val);
+                setField("category", null);
+              }}
+              onKeyDown={onEnter}
+            >
+              <option value="">— Select —</option>
+              {mainCategories.map((c: Category) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <label className={LBL}>Sub Category:</label>
             <select
               className={`${SEL} w-36`}
               value={form.category ?? ""}
+              disabled={!mainCategoryId}
+              data-testid="select-product-subcategory"
               onChange={(e) => setField("category", e.target.value || null)}
               onKeyDown={onEnter}
-              data-testid="select-product-category"
             >
               <option value="">— Select —</option>
-              {CATEGORY_OPTIONS.map((c) => (
-                <option key={c} value={c}>{c}</option>
+              {subCategories.map((c: Category) => (
+                <option key={c.id} value={c.name}>{c.name}</option>
               ))}
             </select>
           </div>

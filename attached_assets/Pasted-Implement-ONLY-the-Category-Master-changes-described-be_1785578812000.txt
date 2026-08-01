@@ -1,0 +1,47 @@
+Implement ONLY the Category Master changes described below. Do not analyze or modify unrelated modules.
+
+CATEGORY STRUCTURE:
+Use a 2-level parent-child category system.
+
+Main Categories:
+- Summer
+- Winter
+
+Examples:
+Summer
+  - Summer Lawn 3Pcs
+  - Summer Print
+  - Summer Embroidery
+
+Winter
+  - Winter 3Pcs
+  - Winter Print
+  - Winter Embroidery
+
+Requirements:
+1. Keep the existing categories database/table and parent-child relationship if it already supports this. Do NOT create a new category system if the existing schema can handle it.
+2. Main Category = category where parentId is NULL.
+3. Sub Category = category where parentId points to a Main Category.
+4. Allow additional Main Categories to be created in the future.
+5. Category Master page:
+   - Show Main Categories clearly.
+   - Show their Sub Categories underneath each Main Category.
+   - Add/Edit/Delete must work for both levels.
+   - When creating a Sub Category, provide a Parent Category dropdown containing only Main Categories.
+   - When creating a Main Category, Parent Category should remain empty/null.
+6. Product form:
+   - Category selection must work as Main Category → Sub Category.
+   - Selecting a Main Category should filter the Sub Category dropdown to only its children.
+   - Do not allow a Sub Category from another Main Category to be selected.
+7. Preserve all existing API/database behavior that is already working.
+8. Do not change Product pricing, Scale, QTY, Stock Factor, Length, stock logic, or any other form.
+9. Do not redesign the whole application.
+10. Do not modify unrelated pages or backend services.
+
+IMPORTANT:
+- First inspect ONLY the existing Category schema, Category API/service, CategoryPage, and ProductForm/category fields.
+- Reuse existing functionality wherever possible.
+- Make the minimum required changes.
+- Run TypeScript check after implementation.
+- Verify Category Master and Product Category/Sub Category selection.
+- Stop after this task is complete.

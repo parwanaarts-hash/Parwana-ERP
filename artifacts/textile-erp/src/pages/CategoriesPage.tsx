@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/layout/Header";
 import { Breadcrumb } from "@/components/layout/Breadcrumb";
@@ -29,6 +29,20 @@ export default function CategoriesPage() {
   const [formKey, setFormKey] = useState(0);
 
   const { data, isLoading, refetch } = useListCategories({ search: search || undefined, limit: pageSize, offset: page * pageSize });
+
+  // Sort rows: main categories first, then their children grouped underneath
+  const sortedRows = useMemo((): Category[] => {
+    const rows: Category[] = (data?.rows as Category[]) || [];
+    const mainCats = rows.filter((r: Category) => !r.parentId);
+    const result: Category[] = [];
+    for (const main of mainCats) {
+      result.push(main);
+      rows.filter((r: Category) => r.parentId === main.id).forEach((child: Category) => result.push(child));
+    }
+    // Any orphaned children (parent not in current page)
+    rows.filter((r: Category) => r.parentId && !mainCats.find((m: Category) => m.id === r.parentId)).forEach((r: Category) => result.push(r));
+    return result;
+  }, [data?.rows]);
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
   const deleteCategory = useDeleteCategory();
@@ -125,10 +139,18 @@ export default function CategoriesPage() {
         <EntityTable
           columns={[
             { key: 'id', label: 'ID' },
-            { key: 'name', label: 'Name' },
-            { key: 'parentId', label: 'Parent ID', render: (r) => r.parentId ?? "Main" },
+            { key: 'name', label: 'Name', render: (r: Category) => (r as Category).parentId
+              ? <span className="pl-4">↳ {(r as Category).name}</span>
+              : <span className="font-semibold">{(r as Category).name}</span>
+            },
+            { key: 'parentId', label: 'Type / Parent', render: (r: Category) => {
+              const row = r as Category;
+              if (!row.parentId) return <span className="text-xs font-medium text-primary uppercase tracking-wide">Main Category</span>;
+              const parent = (data?.rows as Category[] | undefined)?.find((p: Category) => p.id === row.parentId);
+              return <span className="text-muted-foreground text-xs">{parent ? parent.name : `ID: ${row.parentId}`}</span>;
+            }},
           ]}
-          rows={data?.rows || []} total={data?.total || 0} isLoading={isLoading} selectedId={selectedId}
+          rows={sortedRows} total={data?.total || 0} isLoading={isLoading} selectedId={selectedId}
           onRowClick={(row) => startEdit(row.id)}
         />
         <PaginationFooter page={page} pageSize={pageSize} total={data?.total || 0} onPageChange={setPage} />

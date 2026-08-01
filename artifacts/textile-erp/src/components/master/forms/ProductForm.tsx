@@ -117,7 +117,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
                 >
                   <option value="">None</option>
                   {categoriesData?.rows?.map(c => (
-                    <option key={c.id} value={c.id}>{c.id} - {c.name}</option>
+                    <option key={(c as any).id} value={(c as any).id}>{(c as any).id} - {(c as any).name}</option>
                   ))}
                 </select>
               </FormControl>
@@ -141,7 +141,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
                 >
                   <option value="">None</option>
                   {shikanjaData?.rows?.map(s => (
-                    <option key={s.id} value={s.id}>{s.id} - {s.name}</option>
+                    <option key={(s as any).id} value={(s as any).id}>{(s as any).id} - {(s as any).name}</option>
                   ))}
                 </select>
               </FormControl>

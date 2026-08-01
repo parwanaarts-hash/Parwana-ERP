@@ -18,7 +18,7 @@ interface CategoryFormProps {
 }
 
 export function CategoryForm({ initialData, onSubmit }: CategoryFormProps) {
-  const { data: mainCategories } = useListCategories({ limit: 1000, offset: 0, topLevelOnly: true });
+  const { data: mainCategories } = useListCategories({ limit: 500, offset: 0, topLevelOnly: true });
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
