@@ -4,7 +4,6 @@ import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/Dashboar
 const cards: NavCard[] = [
   {
     label: "Purchase",
-    labelUrdu: "خریداری",
     description: "Purchase gate passes and purchase entries.",
     href: "/stock/purchase",
     icon: ArrowRightLeft,
@@ -13,7 +12,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Sales",
-    labelUrdu: "فروخت",
     description: "Sale gate passes and sales entries.",
     href: "/stock/sales",
     icon: TrendingDown,
@@ -22,7 +20,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Return",
-    labelUrdu: "واپسی",
     description: "Return gate passes and return entries.",
     href: "/stock/returns",
     icon: RotateCcw,
@@ -31,7 +28,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Add",
-    labelUrdu: "اضافہ",
     description: "Master data — products, categories, parties.",
     href: "/stock/add",
     icon: PlusCircle,
@@ -40,7 +36,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Reports",
-    labelUrdu: "رپورٹس",
     description: "Stock reports, registers and product ledger.",
     href: "/stock/reports",
     icon: FileText,
@@ -49,7 +44,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Settings",
-    labelUrdu: "ترتیبات",
     description: "System configuration and preferences.",
     href: "/stock/settings",
     icon: Settings,
@@ -62,7 +56,6 @@ export default function StockModulePage() {
   return (
     <DashboardLayout
       title="Stock Module"
-      titleUrdu="اسٹاک ماڈیول"
       subtitle="Select a section to continue"
       back={{ href: "/", label: "Home" }}
     >

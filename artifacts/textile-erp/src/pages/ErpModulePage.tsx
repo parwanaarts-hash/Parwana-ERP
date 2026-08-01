@@ -4,7 +4,6 @@ import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/Dashboar
 const cards: NavCard[] = [
   {
     label: "Purchase",
-    labelUrdu: "خریداری",
     description: "Purchase bills entry and management.",
     href: "/erp/purchase",
     icon: ArrowRightLeft,
@@ -13,7 +12,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Sales",
-    labelUrdu: "فروخت",
     description: "Sales bills entry and management.",
     href: "/erp/sales",
     icon: TrendingDown,
@@ -22,7 +20,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Payments",
-    labelUrdu: "ادائیگیاں",
     description: "Payment paid and payment receive entries.",
     href: "/erp/payments",
     icon: CreditCard,
@@ -31,7 +28,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Return",
-    labelUrdu: "واپسی",
     description: "Return bills and return adjustments.",
     href: "/erp/return",
     icon: RotateCcw,
@@ -40,7 +36,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Ledgers",
-    labelUrdu: "لیجرز",
     description: "Purchase party and sale party ledgers.",
     href: "/erp/ledgers",
     icon: BookOpen,
@@ -49,7 +44,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Reports",
-    labelUrdu: "رپورٹس",
     description: "Purchase, sales, return and payment registers.",
     href: "/erp/reports",
     icon: FileText,
@@ -58,7 +52,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Settings",
-    labelUrdu: "ترتیبات",
     description: "ERP configuration and preferences.",
     href: "/erp/settings",
     icon: Settings,
@@ -71,7 +64,6 @@ export default function ErpModulePage() {
   return (
     <DashboardLayout
       title="ERP Module"
-      titleUrdu="ای آر پی ماڈیول"
       subtitle="Select a section to continue"
       back={{ href: "/", label: "Home" }}
     >

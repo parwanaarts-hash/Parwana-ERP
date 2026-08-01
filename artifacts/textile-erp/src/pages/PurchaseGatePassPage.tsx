@@ -172,7 +172,7 @@ export default function PurchaseGatePassPage() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-full w-full bg-background" data-testid="page-purchase-gate-pass">
-      <Header title="Purchase Gate Pass / خریداری گیٹ پاس" />
+      <Header title="Purchase Gate Pass" />
 
       <div className="flex-1 overflow-auto p-4 flex flex-col gap-3">
         <Breadcrumb items={["Stock", "Purchase", "Gate Pass"]} />
@@ -231,7 +231,7 @@ export default function PurchaseGatePassPage() {
         <div className="bg-card border rounded-md shadow-sm overflow-hidden" data-testid="container-form-section">
           <div className="flex items-center gap-3 px-4 py-2.5 border-b bg-muted/10">
             <h3 className="font-semibold text-sm">
-              {mode === "edit" ? "Edit Purchase Gate Pass / ترمیم" : "New Purchase Gate Pass / نیا گیٹ پاس"}
+              {mode === "edit" ? "Edit Purchase Gate Pass" : "New Purchase Gate Pass"}
             </h3>
             {mode === "edit" && isLoadingRecord && (
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />

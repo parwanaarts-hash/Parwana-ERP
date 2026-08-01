@@ -4,7 +4,6 @@ import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/Dashboar
 const cards: NavCard[] = [
   {
     label: "Products",
-    labelUrdu: "پروڈکٹس",
     description: "Manage product catalogue, types and shikanja assignments.",
     href: "/stock/add/products",
     icon: Box,
@@ -13,7 +12,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Categories",
-    labelUrdu: "زمرے",
     description: "Main and sub categories for product classification.",
     href: "/stock/add/categories",
     icon: Tag,
@@ -22,7 +20,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Shikanja",
-    labelUrdu: "شکنجہ",
     description: "Shikanja / frame types linked to products.",
     href: "/stock/add/shikanja",
     icon: Layers,
@@ -31,7 +28,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Purchase Parties",
-    labelUrdu: "خریداری فریقین",
     description: "Suppliers and vendors for purchase transactions.",
     href: "/stock/add/purchase-parties",
     icon: Building2,
@@ -40,7 +36,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Sale Parties",
-    labelUrdu: "فروخت فریقین",
     description: "Customers and buyers for sale transactions.",
     href: "/stock/add/sale-parties",
     icon: Users,
@@ -53,7 +48,6 @@ export default function StockAddSectionPage() {
   return (
     <DashboardLayout
       title="Add"
-      titleUrdu="اضافہ"
       subtitle="Master data management"
       back={{ href: "/stock", label: "Stock Module" }}
     >

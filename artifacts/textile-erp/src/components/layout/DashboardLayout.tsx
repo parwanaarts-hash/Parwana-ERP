@@ -51,9 +51,6 @@ function DashCard({
         <h3 className={`font-semibold text-card-foreground leading-tight ${isLg ? "text-xl" : "text-sm"}`}>
           {label}
         </h3>
-        {labelUrdu && (
-          <p className="text-muted-foreground text-sm font-normal mt-0.5">{labelUrdu}</p>
-        )}
         {description && (
           <p className={`text-muted-foreground mt-2 leading-snug ${isLg ? "text-sm" : "text-xs"}`}>
             {description}
@@ -129,9 +126,6 @@ export function DashboardLayout({
         <div className="max-w-5xl mx-auto px-6 py-14">
           <div className="text-center mb-10">
             <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
-            {titleUrdu && (
-              <p className="text-xl text-muted-foreground font-medium mt-1">{titleUrdu}</p>
-            )}
             {subtitle && (
               <p className="text-muted-foreground mt-2 text-sm">{subtitle}</p>
             )}

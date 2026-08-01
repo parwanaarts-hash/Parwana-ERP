@@ -4,7 +4,6 @@ import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/Dashboar
 const cards: NavCard[] = [
   {
     label: "Payment Paid",
-    labelUrdu: "ادائیگی",
     description: "Record payments made to purchase parties.",
     href: "/stock/purchase/payments",
     icon: CreditCard,
@@ -13,7 +12,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Payment Receive",
-    labelUrdu: "وصولی",
     description: "Record payments received from sale parties.",
     href: "/stock/sales/payments",
     icon: Wallet,
@@ -26,7 +24,6 @@ export default function ErpPaymentsSectionPage() {
   return (
     <DashboardLayout
       title="Payments"
-      titleUrdu="ادائیگیاں"
       subtitle="Select a screen to continue"
       back={{ href: "/erp", label: "ERP Module" }}
     >

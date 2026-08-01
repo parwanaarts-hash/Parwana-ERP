@@ -4,7 +4,6 @@ import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/Dashboar
 const cards: NavCard[] = [
   {
     label: "Stock List",
-    labelUrdu: "اسٹاک فہرست",
     description: "Current stock levels and inventory summary.",
     href: "/stock/reports/stock",
     icon: List,
@@ -13,7 +12,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Product Ledger",
-    labelUrdu: "پروڈکٹ لیجر",
     description: "Movement history for individual products.",
     href: "/stock/reports/product-ledger",
     icon: BookOpen,
@@ -22,7 +20,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Purchase Gate Pass Register",
-    labelUrdu: "خریداری گیٹ پاس رجسٹر",
     description: "All purchase gate pass records and summary.",
     href: "/stock/reports/purchase",
     icon: ClipboardList,
@@ -31,7 +28,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Sale Gate Pass Register",
-    labelUrdu: "فروخت گیٹ پاس رجسٹر",
     description: "All sale gate pass records and summary.",
     href: "/stock/reports/sales",
     icon: ClipboardCheck,
@@ -40,7 +36,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Return Gate Pass Register",
-    labelUrdu: "واپسی گیٹ پاس رجسٹر",
     description: "All return gate pass records and summary.",
     href: "/stock/reports/returns",
     icon: RotateCcw,
@@ -53,7 +48,6 @@ export default function StockReportsSectionPage() {
   return (
     <DashboardLayout
       title="Reports"
-      titleUrdu="رپورٹس"
       subtitle="Stock reports and registers"
       back={{ href: "/stock", label: "Stock Module" }}
     >

@@ -4,7 +4,6 @@ import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/Dashboar
 const cards: NavCard[] = [
   {
     label: "Return Bill",
-    labelUrdu: "واپسی بل",
     description: "Create and manage return bills linked to return gate passes.",
     href: "/stock/returns/bills",
     icon: FileX,
@@ -17,7 +16,6 @@ export default function ErpReturnSectionPage() {
   return (
     <DashboardLayout
       title="Return"
-      titleUrdu="واپسی"
       subtitle="Select a screen to continue"
       back={{ href: "/erp", label: "ERP Module" }}
     >

@@ -4,7 +4,6 @@ import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/Dashboar
 const cards: NavCard[] = [
   {
     label: "Return Gate Pass",
-    labelUrdu: "واپسی گیٹ پاس",
     description: "Record stock returns with return gate pass entries.",
     href: "/stock/returns/gate-passes",
     icon: FileX2,
@@ -17,7 +16,6 @@ export default function StockReturnSectionPage() {
   return (
     <DashboardLayout
       title="Return"
-      titleUrdu="واپسی"
       subtitle="Select a screen to continue"
       back={{ href: "/stock", label: "Stock Module" }}
     >

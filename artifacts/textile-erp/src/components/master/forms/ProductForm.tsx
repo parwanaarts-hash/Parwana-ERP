@@ -59,7 +59,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
           name="itemCode"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Item Code (آئٹم کوڈ)</FormLabel>
+              <FormLabel>Item Code</FormLabel>
               <FormControl>
                 <Input {...field} data-testid="input-product-itemcode" />
               </FormControl>
@@ -72,7 +72,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
           name="productName"
           render={({ field }) => (
             <FormItem className="xl:col-span-2">
-              <FormLabel>Product Name (پروڈکٹ نام)</FormLabel>
+              <FormLabel>Product Name</FormLabel>
               <FormControl>
                 <Input {...field} data-testid="input-product-name" />
               </FormControl>
@@ -85,7 +85,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Type (قسم)</FormLabel>
+              <FormLabel>Type</FormLabel>
               <FormControl>
                 <select 
                   {...field}

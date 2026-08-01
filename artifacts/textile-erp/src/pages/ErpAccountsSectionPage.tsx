@@ -4,7 +4,6 @@ import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/Dashboar
 const cards: NavCard[] = [
   {
     label: "Purchase Party Ledger",
-    labelUrdu: "خریداری فریق لیجر",
     description: "Statement of accounts for purchase parties / suppliers.",
     icon: Building2,
     iconBg: "bg-amber-100",
@@ -13,7 +12,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Sale Party Ledger",
-    labelUrdu: "فروخت فریق لیجر",
     description: "Statement of accounts for sale parties / customers.",
     icon: Users,
     iconBg: "bg-lime-100",
@@ -26,7 +24,6 @@ export default function ErpAccountsSectionPage() {
   return (
     <DashboardLayout
       title="Ledgers"
-      titleUrdu="لیجرز"
       subtitle="Party account statements"
       back={{ href: "/erp", label: "ERP Module" }}
     >

@@ -4,7 +4,6 @@ import { DashboardLayout, CardGrid, NavCard } from "@/components/layout/Dashboar
 const cards: NavCard[] = [
   {
     label: "Purchase Register",
-    labelUrdu: "خریداری رجسٹر",
     description: "All purchase bills and summary.",
     icon: ClipboardList,
     iconBg: "bg-green-100",
@@ -13,7 +12,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Sales Register",
-    labelUrdu: "فروخت رجسٹر",
     description: "All sales bills and summary.",
     icon: ClipboardCheck,
     iconBg: "bg-orange-100",
@@ -22,7 +20,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Return Register",
-    labelUrdu: "واپسی رجسٹر",
     description: "All return bills and summary.",
     icon: RotateCcw,
     iconBg: "bg-rose-100",
@@ -31,7 +28,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Payment Paid Register",
-    labelUrdu: "ادائیگی رجسٹر",
     description: "All outgoing payments register.",
     icon: CreditCard,
     iconBg: "bg-blue-100",
@@ -40,7 +36,6 @@ const cards: NavCard[] = [
   },
   {
     label: "Payment Receive Register",
-    labelUrdu: "وصولی رجسٹر",
     description: "All incoming payments register.",
     icon: Wallet,
     iconBg: "bg-indigo-100",
@@ -53,7 +48,6 @@ export default function ErpReportsPage() {
   return (
     <DashboardLayout
       title="Reports"
-      titleUrdu="رپورٹس"
       subtitle="ERP reports and registers"
       back={{ href: "/erp", label: "ERP Module" }}
     >

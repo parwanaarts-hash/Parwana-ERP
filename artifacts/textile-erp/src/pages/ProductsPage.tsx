@@ -33,10 +33,10 @@ import { RefreshCcw, Save, Pencil, Trash2, Printer, LogOut } from "lucide-react"
 
 // ── Scale options ────────────────────────────────────────────────────────────
 const SCALE_OPTIONS = [
-  { value: "Ng",   label: "نگ"   },
-  { value: "Set",  label: "سیٹ"  },
-  { value: "Suit", label: "سوٹ"  },
-  { value: "Than", label: "تھان" },
+  { value: "Ng",   label: "Ng"   },
+  { value: "Set",  label: "Set"  },
+  { value: "Suit", label: "Suit" },
+  { value: "Than", label: "Than" },
 ];
 
 
@@ -422,7 +422,7 @@ export default function ProductsPage() {
           <input
             className={`${INP} text-right`}
             dir="rtl"
-            placeholder="اردو نام"
+            placeholder="Urdu Name"
             value={form.urduName ?? ""}
             onChange={(e) => setField("urduName", e.target.value)}
             onKeyDown={onEnter}
@@ -430,7 +430,7 @@ export default function ProductsPage() {
           />
         </div>
 
-        {/* Row 2: Category | Scale | QTY | تھان | میٹر | Rate | Remarks */}
+        {/* Row 2: Category | Scale | QTY | Stock Factor | Length | Rate | Remarks */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-1.5">
             <label className={LBL}>Main Category:</label>
@@ -496,7 +496,7 @@ export default function ProductsPage() {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <label className={`${LBL} font-urdu`}>تھان</label>
+            <label className={LBL}>Stock Factor</label>
             <input
               type="number"
               className={`${INP} w-16`}
@@ -508,7 +508,7 @@ export default function ProductsPage() {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <label className={`${LBL} font-urdu`}>میٹر</label>
+            <label className={LBL}>Length (m)</label>
             <input
               type="number"
               className={`${INP} w-20`}

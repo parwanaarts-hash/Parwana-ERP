@@ -63,7 +63,7 @@ export function CategoryForm({ initialData, onSubmit }: CategoryFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Category Name (نام)</FormLabel>
+              <FormLabel>Category Name</FormLabel>
               <FormControl>
                 <Input {...field} data-testid="input-category-name" />
               </FormControl>

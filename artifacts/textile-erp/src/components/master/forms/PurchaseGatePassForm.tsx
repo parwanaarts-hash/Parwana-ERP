@@ -106,7 +106,7 @@ function ProductCombobox({
       <input
         ref={inputRef}
         value={displayVal}
-        placeholder="کوڈ یا نام تلاش کریں…"
+        placeholder="Search by code or name…"
         autoComplete="off"
         spellCheck={false}
         data-grid-row={rowIdx}
@@ -350,15 +350,15 @@ export function PurchaseGatePassForm({
         {isDirty && (
           <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-50 border-b border-amber-200 text-amber-800 text-xs">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-            غیر محفوظ تبدیلیاں —{" "}
+            Unsaved changes —{" "}
             <kbd className="mx-0.5 px-1.5 py-0.5 bg-amber-100 border border-amber-300 rounded text-xs font-mono">
               Ctrl+S
             </kbd>{" "}
-            محفوظ کریں یا{" "}
+            to save or{" "}
             <kbd className="mx-0.5 px-1.5 py-0.5 bg-amber-100 border border-amber-300 rounded text-xs font-mono">
               Esc
             </kbd>{" "}
-            چھوڑیں
+            to discard
           </div>
         )}
 
@@ -385,7 +385,7 @@ export function PurchaseGatePassForm({
             render={({ field }) => (
               <FormItem className="space-y-1">
                 <FormLabel className="text-xs font-medium text-muted-foreground leading-none">
-                  تاریخ
+                  Date
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -419,7 +419,7 @@ export function PurchaseGatePassForm({
             render={({ field }) => (
               <FormItem className="space-y-1">
                 <FormLabel className="text-xs font-medium text-muted-foreground leading-none">
-                  خریداری فریق
+                  Purchase Party
                 </FormLabel>
                 <Select
                   value={field.value ? String(field.value) : ""}
@@ -430,7 +430,7 @@ export function PurchaseGatePassForm({
                       className="h-8 text-sm"
                       data-testid="select-gp-party"
                     >
-                      <SelectValue placeholder="فریق منتخب کریں" />
+                      <SelectValue placeholder="Select party" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -453,7 +453,7 @@ export function PurchaseGatePassForm({
             render={({ field }) => (
               <FormItem className="space-y-1">
                 <FormLabel className="text-xs font-medium text-muted-foreground leading-none">
-                  لاٹ نمبر
+                  Lot #
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -486,7 +486,7 @@ export function PurchaseGatePassForm({
             render={({ field }) => (
               <FormItem className="space-y-1 lg:col-span-2">
                 <FormLabel className="text-xs font-medium text-muted-foreground leading-none">
-                  نوٹ
+                  Remarks
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -512,7 +512,7 @@ export function PurchaseGatePassForm({
           {/* Grid toolbar */}
           <div className="flex items-center justify-between px-4 py-2 bg-muted/10 border-b">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              اشیاء / Items
+              Items
               {(form.formState.errors.items as { message?: string } | undefined)
                 ?.message && (
                 <span className="ml-2 normal-case font-normal text-destructive">
@@ -536,7 +536,7 @@ export function PurchaseGatePassForm({
               className="flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-800 px-2.5 py-1.5 rounded-md hover:bg-blue-50 transition-colors border border-blue-200 hover:border-blue-300"
               data-testid="button-add-row"
             >
-              <Plus className="h-3.5 w-3.5" /> قطار شامل کریں
+              <Plus className="h-3.5 w-3.5" /> Add Row
             </button>
           </div>
 
@@ -555,19 +555,19 @@ export function PurchaseGatePassForm({
                     className="border-b border-r px-3 py-2 text-left text-xs font-medium text-muted-foreground select-none"
                     style={{ minWidth: "220px" }}
                   >
-                    پروڈکٹ / Product
+                    Product
                   </th>
                   <th className="border-b border-r px-3 py-2 text-right text-xs font-medium text-muted-foreground w-24 select-none">
-                    مقدار / Qty
+                    Qty
                   </th>
                   <th className="border-b border-r px-3 py-2 text-right text-xs font-medium text-muted-foreground w-24 select-none">
-                    گزانہ / Gazana
+                    Gazana
                   </th>
                   <th className="border-b border-r px-3 py-2 text-right text-xs font-medium text-muted-foreground w-28 select-none">
-                    ریٹ / Rate
+                    Rate
                   </th>
                   <th className="border-b border-r px-3 py-2 text-right text-xs font-medium text-muted-foreground w-28 select-none">
-                    موصول / Rcvd Qty
+                    Rcvd Qty
                   </th>
                   <th className="border-b px-2 py-2 text-center text-xs text-muted-foreground w-10 select-none" />
                 </tr>
@@ -697,7 +697,7 @@ export function PurchaseGatePassForm({
                                   : "text-red-600"
                               }`}
                             >
-                              باقی: {fmtNum(pendingQty)}
+                              Pending: {fmtNum(pendingQty)}
                             </span>
                           )}
                         </div>
@@ -710,7 +710,7 @@ export function PurchaseGatePassForm({
                           onClick={() => fields.length > 1 && remove(index)}
                           disabled={fields.length <= 1}
                           className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-red-50 hover:text-red-600 disabled:opacity-20 disabled:cursor-not-allowed text-muted-foreground transition-colors opacity-0 group-hover:opacity-100"
-                          title="قطار حذف کریں"
+                          title="Delete row"
                           data-testid={`button-delete-row-${index}`}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -729,7 +729,7 @@ export function PurchaseGatePassForm({
           <div className="flex items-center gap-8 px-4 py-2.5 bg-muted/30 border-t text-sm">
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
-                کل مقدار:
+                Total Qty:
               </span>
               <span className="font-semibold tabular-nums min-w-[4rem] text-right">
                 {totalQty > 0 ? fmtNum(totalQty) : "—"}
@@ -737,7 +737,7 @@ export function PurchaseGatePassForm({
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
-                کل گزانہ:
+                Total Gazana:
               </span>
               <span className="font-semibold tabular-nums min-w-[4rem] text-right">
                 {totalGazana > 0 ? fmtNum(totalGazana) : "—"}
@@ -745,7 +745,7 @@ export function PurchaseGatePassForm({
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
-                کل اشیاء:
+                Total Items:
               </span>
               <span className="font-semibold tabular-nums">
                 {fields.length}
