@@ -27,15 +27,15 @@ const PRODUCTS = [
   { name: "Cotton Plain Kurta", scale: "پیس", meterPerUnit: 15 },
 ];
 
-const num = (v: any) => (v === "" || v === undefined || v === null ? 0 : Number(v));
+const num = (v) => (v === "" || v === undefined || v === null ? 0 : Number(v));
 const emptyEntry = () => ({
-  product: null as typeof PRODUCTS[0] | null,
+  product: null,
   qty: "",
   rate: "",
   discRate: "",
 });
 
-export default function PurchaseGatePassPage() {
+export default function PurchaseGatePass() {
   const [gpNo, setGpNo] = useState("");
   const [billNo] = useState("Auto");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -46,17 +46,17 @@ export default function PurchaseGatePassPage() {
   const [city, setCity] = useState("");
   const [noOfBags, setNoOfBags] = useState("");
 
-  const [rows, setRows] = useState<any[]>([]);
+  const [rows, setRows] = useState([]);
 
   const [entry, setEntry] = useState(emptyEntry());
   const [searchTerm, setSearchTerm] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(0);
 
-  const productInputRef = useRef<HTMLInputElement>(null);
-  const qtyRef = useRef<HTMLInputElement>(null);
-  const rateRef = useRef<HTMLInputElement>(null);
-  const discRef = useRef<HTMLInputElement>(null);
+  const productInputRef = useRef(null);
+  const qtyRef = useRef(null);
+  const rateRef = useRef(null);
+  const discRef = useRef(null);
 
   const filteredProducts = searchTerm
     ? PRODUCTS.filter((p) =>
@@ -67,14 +67,14 @@ export default function PurchaseGatePassPage() {
       )
     : PRODUCTS;
 
-  const selectProduct = (product: typeof PRODUCTS[0]) => {
+  const selectProduct = (product) => {
     setEntry((prev) => ({ ...prev, product }));
     setSearchTerm(product.name);
     setShowSuggestions(false);
     setTimeout(() => qtyRef.current?.focus(), 0);
   };
 
-  const handleProductKeyDown = (e: React.KeyboardEvent) => {
+  const handleProductKeyDown = (e) => {
     if (!showSuggestions) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -103,8 +103,8 @@ export default function PurchaseGatePassPage() {
       ...prev,
       {
         id: crypto.randomUUID(),
-        product: entry.product!.name,
-        scale: entry.product!.scale,
+        product: entry.product.name,
+        scale: entry.product.scale,
         qty: num(entry.qty),
         meter,
         rate: num(entry.rate),
@@ -119,7 +119,7 @@ export default function PurchaseGatePassPage() {
     setTimeout(() => productInputRef.current?.focus(), 0);
   }, [canCommit, entry, meter, amount, discRs, netBill]);
 
-  const deleteRow = (id: string) => setRows((prev) => prev.filter((r) => r.id !== id));
+  const deleteRow = (id) => setRows((prev) => prev.filter((r) => r.id !== id));
 
   const totals = rows.reduce(
     (acc, r) => {
