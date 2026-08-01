@@ -1,0 +1,82 @@
+Update ONLY the Master Data entry forms for:
+- Products
+- Purchase Parties
+- Sale Parties
+- Shikanja
+
+Do NOT modify Stock, ERP, Bills, Gate Passes, Ledgers, Reports, Categories, or unrelated modules.
+
+REQUIREMENT: SERIAL / ID FIELD MUST WORK AS BOTH DISPLAY + RECORD LOOKUP
+
+1. NEW ENTRY SERIAL
+When any master entry form opens in New Entry mode:
+- The ID / Serial field must automatically show the next available serial number.
+- Example: last saved record is #8 → new entry form shows #9.
+- The number must be visible inside the ID/Serial input box.
+- User must NOT need Ctrl+F2 or any New Entry button.
+
+2. PREVIOUS RECORD LOOKUP
+The same ID / Serial input must also work as a lookup field.
+
+Example:
+- Current new serial is 9.
+- User types 5 into the ID field.
+- On Enter/Tab (or an appropriate lookup action), load record #5 into ALL form fields.
+- The form must switch to Edit mode.
+- User can modify any field and press Update to save changes to record #5.
+
+3. INVALID SERIAL
+If the user enters a serial number that does not exist:
+- Do not overwrite the form with empty data.
+- Show a clear "Record not found" message/toast.
+- Keep the form usable for a new entry.
+
+4. NEW ENTRY AFTER SAVE
+After saving a new record:
+- Automatically reset the form.
+- Fetch the next available serial number.
+- Show that new serial inside the ID field.
+- Example: save #9 → form becomes ready for #10.
+
+5. IMPORTANT ID RULE
+Do NOT confuse:
+- Database primary key
+- Visible sequential serial number
+- Table Sr. No.
+
+First inspect each existing schema/API and determine the correct existing identifier/serial field for:
+Products, Purchase Parties, Sale Parties and Shikanja.
+
+Do NOT invent a new serial system if an existing code/number system already exists.
+
+6. PRODUCT
+Respect the existing Product Item Code/ID system.
+The visible lookup field must allow entering an existing product code/number and loading that product.
+
+7. PURCHASE PARTY / SALE PARTY / SHIKANJA
+Apply the same lookup behavior using their existing ID/code/serial field.
+
+8. UI
+Keep the current finalized light ERP interface.
+Do not redesign the forms.
+Only improve the ID/Serial field behavior and the required edit/load logic.
+
+9. DATA SAFETY
+- Never create a duplicate record just because a user enters an existing serial.
+- Existing serial → LOAD/EDIT.
+- New serial → NEW ENTRY.
+- Update must update the existing record.
+
+10. PERFORMANCE
+Keep this implementation focused.
+Reuse existing API hooks/services wherever possible.
+Do not rewrite unrelated files.
+
+After implementation:
+- Run TypeScript check.
+- Test new serial display.
+- Test entering an old serial.
+- Test record loading.
+- Test editing and updating.
+- Test saving a new record and getting the next serial.
+- Stop after these four Master Data forms are working.

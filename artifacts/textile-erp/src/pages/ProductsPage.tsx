@@ -8,6 +8,12 @@
  *
  * Keyboard:
  *   Enter → next field   Ctrl+S → Save   Esc → Exit
+ *
+ * ID / Item Code lookup:
+ *   - New entry: the ID field shows the next available DB id (total + 1).
+ *   - The Item Code field works as a lookup: type an existing code and press
+ *     Enter to load that product into the form in edit mode.
+ *   - "Record not found" message shown when the code doesn't exist.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -20,6 +26,7 @@ import {
   useDeleteProduct,
   getListProductsQueryKey,
   useListCategories,
+  getListProductsQueryOptions,
 } from "@workspace/api-client-react";
 import type { Product, ProductInput, Category } from "@workspace/api-client-react";
 import { RefreshCcw, Save, Pencil, Trash2, Printer, LogOut } from "lucide-react";
@@ -126,10 +133,13 @@ export default function ProductsPage() {
   const total = data?.total ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  // Next available DB id shown in the ID display field
+  const nextSerial = total + 1;
+
   // ── Helpers ───────────────────────────────────────────────────────────────
   function notify(text: string, err = false) {
     setMsg({ text, err });
-    setTimeout(() => setMsg(null), 3000);
+    setTimeout(() => setMsg(null), 3500);
   }
 
   function setField<K extends keyof ProductInput>(k: K, v: ProductInput[K]) {
@@ -166,6 +176,33 @@ export default function ProductsPage() {
     setForm(EMPTY);
     setMainCategoryId(null);
     setTimeout(() => firstFieldRef.current?.focus(), 50);
+  }
+
+  /**
+   * Lookup by itemCode: search for an exact match.
+   * If found → load in edit mode. If not found → notify and keep new mode.
+   */
+  async function lookupByItemCode(code: string) {
+    const trimmed = code.trim();
+    if (!trimmed) return;
+    // If already editing this exact item, do nothing
+    if (mode === "edit" && form.itemCode === trimmed) return;
+    try {
+      const result = await queryClient.fetchQuery(
+        getListProductsQueryOptions({ search: trimmed, limit: 10, offset: 0 })
+      );
+      const match = (result?.rows as Product[] | undefined)?.find(
+        (r) => r.itemCode.toLowerCase() === trimmed.toLowerCase()
+      );
+      if (match) {
+        loadRow(match);
+      } else {
+        // Not found — stay in new mode, keep the typed code
+        notify(`Item Code "${trimmed}" not found. Form is ready for a new entry.`, true);
+      }
+    } catch {
+      notify("Lookup failed. Please try again.", true);
+    }
   }
 
   // ── Actions ───────────────────────────────────────────────────────────────
@@ -267,6 +304,24 @@ export default function ProductsPage() {
     els[idx + 1]?.focus();
   }
 
+  // Item Code field: Enter triggers lookup, then moves focus
+  function onItemCodeKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const val = (e.currentTarget as HTMLInputElement).value;
+      lookupByItemCode(val).then(() => {
+        // move focus to next field after lookup completes
+        const wrapper = e.currentTarget.closest("div[data-form]");
+        if (!wrapper) return;
+        const els = Array.from(
+          wrapper.querySelectorAll<HTMLElement>("input,select,textarea"),
+        ).filter((el) => !el.hasAttribute("disabled"));
+        const idx = els.indexOf(e.currentTarget as HTMLElement);
+        els[idx + 1]?.focus();
+      });
+    }
+  }
+
   const isBusy =
     createProduct.isPending || updateProduct.isPending || deleteProduct.isPending;
 
@@ -320,8 +375,21 @@ export default function ProductsPage() {
         className="border-b border-border bg-card px-3 py-2 shrink-0 shadow-sm"
         data-form=""
       >
-        {/* Row 1: Item Code | Product Name | Urdu Name */}
-        <div className="grid grid-cols-[auto_1fr_auto_1fr_auto_1fr] items-center gap-x-2 gap-y-1.5 mb-1.5">
+        {/* Row 1: DB ID (display) | Item Code (lookup) | Product Name | Urdu Name */}
+        <div className="grid grid-cols-[auto_auto_1fr_auto_1fr_auto_1fr] items-center gap-x-2 gap-y-1.5 mb-1.5">
+
+          {/* DB ID — read-only display of next serial or current record's id */}
+          <label className={LBL}>ID :</label>
+          <input
+            readOnly
+            tabIndex={-1}
+            value={mode === "edit" && selectedId ? selectedId : nextSerial}
+            className={
+              "bg-muted/50 border border-border text-muted-foreground text-xs h-6 px-1.5 w-12 rounded-sm cursor-default select-none"
+            }
+            title={mode === "edit" ? `Record ID: ${selectedId}` : `Next available ID: ${nextSerial}`}
+          />
+
           <label className={LBL}>Item Code :</label>
           <div className="flex gap-1">
             <input
@@ -329,8 +397,9 @@ export default function ProductsPage() {
               className={INP}
               value={form.itemCode ?? ""}
               onChange={(e) => setField("itemCode", e.target.value)}
-              onKeyDown={onEnter}
+              onKeyDown={onItemCodeKeyDown}
               data-testid="input-product-itemcode"
+              title="Type an existing Item Code and press Enter to load that product"
             />
             <button
               className="bg-muted border border-border text-muted-foreground hover:bg-accent text-[10px] px-2 h-6 shrink-0 rounded-sm"
@@ -499,7 +568,7 @@ export default function ProductsPage() {
         <table className="w-full text-xs border-collapse">
           <thead className="sticky top-0 z-10">
             <tr className="bg-primary text-primary-foreground">
-              {["Item Code", "Product Name", "Category", "Scale", "Length", "Rate", "Remarks"].map((h) => (
+              {["ID", "Item Code", "Product Name", "Category", "Scale", "Length", "Rate", "Remarks"].map((h) => (
                 <th
                   key={h}
                   className="text-left px-2 py-1.5 border-r border-primary/40 font-medium whitespace-nowrap"
@@ -513,7 +582,7 @@ export default function ProductsPage() {
             {isLoading ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <tr key={i} className="border-b border-border">
-                  {Array.from({ length: 7 }).map((_, j) => (
+                  {Array.from({ length: 8 }).map((_, j) => (
                     <td key={j} className="px-2 py-1">
                       <div className="h-3 bg-muted rounded animate-pulse w-3/4" />
                     </td>
@@ -522,7 +591,7 @@ export default function ProductsPage() {
               ))
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                <td colSpan={8} className="text-center py-8 text-muted-foreground">
                   No products found.
                 </td>
               </tr>
@@ -543,6 +612,7 @@ export default function ProductsPage() {
                     onDoubleClick={() => loadRow(row)}
                     data-testid={`row-entity-${row.id}`}
                   >
+                    <td className="px-2 py-0.5 border-r border-border font-mono text-muted-foreground">{row.id}</td>
                     <td className="px-2 py-0.5 border-r border-border font-mono">{row.itemCode}</td>
                     <td className="px-2 py-0.5 border-r border-border">{row.productName}</td>
                     <td className="px-2 py-0.5 border-r border-border">{row.category ?? "—"}</td>
@@ -593,7 +663,7 @@ export default function ProductsPage() {
           {mode === "new" ? "NEW" : "EDIT"}
         </span>
         <span className="text-muted-foreground">
-          Ctrl+S=Save · Esc=Exit · Double-click row to edit
+          Ctrl+S=Save · Esc=Exit · Type Item Code + Enter to look up · Double-click row to edit
         </span>
       </div>
 

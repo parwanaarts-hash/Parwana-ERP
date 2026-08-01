@@ -14,6 +14,7 @@ import {
 import {
   useListShikanja, useCreateShikanja, useUpdateShikanja, useDeleteShikanja,
   getListShikanjaQueryKey, Shikanja,
+  getGetShikanjaQueryOptions,
 } from "@workspace/api-client-react";
 
 // ── Shared toolbar button ────────────────────────────────────────────────────
@@ -49,6 +50,8 @@ export default function ShikanjaPage() {
   const [searchInput, setSearchInput] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [formKey, setFormKey] = useState(0);
+  /** Record fetched via ID field lookup (may not be in the current page). */
+  const [lookupRecord, setLookupRecord] = useState<Shikanja | null>(null);
 
   const { data, isLoading, refetch } = useListShikanja({
     search: search || undefined,
@@ -61,8 +64,12 @@ export default function ShikanjaPage() {
   const deleteShikanja = useDeleteShikanja();
 
   const rows = (data?.rows as Shikanja[] | undefined) ?? [];
-  const selectedRow = rows.find((r) => r.id === selectedId);
+  // The record currently loaded into the form (may come from table row or ID lookup)
+  const selectedRow = rows.find((r) => r.id === selectedId) ?? lookupRecord ?? null;
   const isSaving = createShikanja.isPending || updateShikanja.isPending;
+
+  // Next available serial (shown in new-entry ID field)
+  const nextSerial = (data?.total ?? 0) + 1;
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -79,6 +86,25 @@ export default function ShikanjaPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedId, mode, exitForm]);
 
+  /** Handle ID field commit: load existing record or keep new-entry mode. */
+  const handleSerialCommit = async (val: string) => {
+    const id = parseInt(val, 10);
+    if (isNaN(id) || id <= 0) return;
+    if (mode === "edit" && selectedId === id) return;
+    try {
+      const record = await queryClient.fetchQuery(getGetShikanjaQueryOptions(id));
+      setLookupRecord(record as Shikanja);
+      startEdit((record as Shikanja).id);
+      setFormKey((k) => k + 1);
+    } catch {
+      toast({
+        title: "Record Not Found",
+        description: `Shikanja #${id} does not exist. Form is ready for a new entry.`,
+        variant: "destructive",
+      });
+    }
+  };
+
   // ── Handlers ────────────────────────────────────────────────────────────────
   const handleSearch = () => { setSearch(searchInput); setPage(0); };
 
@@ -86,6 +112,7 @@ export default function ShikanjaPage() {
     queryClient.invalidateQueries({ queryKey: getListShikanjaQueryKey() });
     refetch();
     startAdd();
+    setLookupRecord(null);
     setSearchInput("");
     setSearch("");
   };
@@ -103,6 +130,7 @@ export default function ShikanjaPage() {
         onSuccess: () => {
           toast({ title: "Success", description: "Shikanja created." });
           queryClient.invalidateQueries({ queryKey: getListShikanjaQueryKey() });
+          setLookupRecord(null);
           setFormKey((k) => k + 1);
           startAdd();
         },
@@ -114,6 +142,7 @@ export default function ShikanjaPage() {
         onSuccess: () => {
           toast({ title: "Success", description: "Shikanja updated." });
           queryClient.invalidateQueries({ queryKey: getListShikanjaQueryKey() });
+          setLookupRecord(null);
           setFormKey((k) => k + 1);
           startAdd();
         },
@@ -130,6 +159,7 @@ export default function ShikanjaPage() {
         toast({ title: "Success", description: "Shikanja deleted." });
         queryClient.invalidateQueries({ queryKey: getListShikanjaQueryKey() });
         setIsDeleteDialogOpen(false);
+        setLookupRecord(null);
         setFormKey((k) => k + 1);
         startAdd();
       },
@@ -140,9 +170,8 @@ export default function ShikanjaPage() {
     });
   };
 
-  const formInitialData = mode === "edit" && selectedRow
-    ? { name: selectedRow.name }
-    : undefined;
+  const activeRecord = mode === "edit" ? (selectedRow ?? lookupRecord) : null;
+  const formInitialData = activeRecord ? { name: activeRecord.name } : undefined;
 
   return (
     <div className="flex flex-col h-full w-full bg-background" data-testid="page-shikanja">
@@ -214,6 +243,8 @@ export default function ShikanjaPage() {
             key={formKey}
             initialData={formInitialData}
             currentId={mode === "edit" ? selectedId ?? undefined : undefined}
+            nextSerial={mode !== "edit" ? nextSerial : undefined}
+            onSerialCommit={handleSerialCommit}
             onSubmit={onSubmit}
           />
         </div>
@@ -249,7 +280,10 @@ export default function ShikanjaPage() {
                     key={row.id}
                     data-testid={`row-entity-${row.id}`}
                     className={`cursor-pointer transition-colors ${selectedId === row.id ? "bg-muted/80" : ""}`}
-                    onClick={() => startEdit(row.id)}
+                    onClick={() => {
+                      setLookupRecord(null);
+                      startEdit(row.id);
+                    }}
                   >
                     <TableCell className="text-muted-foreground text-sm">{page * pageSize + idx + 1}</TableCell>
                     <TableCell className="text-muted-foreground text-sm font-mono">{row.id}</TableCell>

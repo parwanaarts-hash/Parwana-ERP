@@ -15,6 +15,7 @@ import {
   useListSaleParties, useCreateSaleParty, useUpdateSaleParty, useDeleteSaleParty,
   getListSalePartiesQueryKey, SaleParty,
   useListShikanja, useCreateShikanja, getListShikanjaQueryKey,
+  getGetSalePartyQueryOptions,
 } from "@workspace/api-client-react";
 
 // ── Shared toolbar button ────────────────────────────────────────────────────
@@ -50,6 +51,8 @@ export default function SalePartiesPage() {
   const [searchInput, setSearchInput] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [formKey, setFormKey] = useState(0);
+  /** Record fetched via ID field lookup (may not be in the current page). */
+  const [lookupRecord, setLookupRecord] = useState<SaleParty | null>(null);
 
   const { data, isLoading, refetch } = useListSaleParties({
     search: search || undefined,
@@ -66,8 +69,12 @@ export default function SalePartiesPage() {
   const createShikanja = useCreateShikanja();
 
   const rows = (data?.rows as SaleParty[] | undefined) ?? [];
-  const selectedRow = rows.find((r) => r.id === selectedId);
+  // The record currently loaded into the form (may come from table row or ID lookup)
+  const selectedRow = rows.find((r) => r.id === selectedId) ?? lookupRecord ?? null;
   const isSaving = createSaleParty.isPending || updateSaleParty.isPending;
+
+  // Next available serial (shown in new-entry ID field)
+  const nextSerial = (data?.total ?? 0) + 1;
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -106,12 +113,32 @@ export default function SalePartiesPage() {
     return created.id;
   };
 
+  /** Handle ID field commit: load existing record or keep new-entry mode. */
+  const handleSerialCommit = async (val: string) => {
+    const id = parseInt(val, 10);
+    if (isNaN(id) || id <= 0) return;
+    if (mode === "edit" && selectedId === id) return;
+    try {
+      const record = await queryClient.fetchQuery(getGetSalePartyQueryOptions(id));
+      setLookupRecord(record as SaleParty);
+      startEdit((record as SaleParty).id);
+      setFormKey((k) => k + 1);
+    } catch {
+      toast({
+        title: "Record Not Found",
+        description: `Sale Party #${id} does not exist. Form is ready for a new entry.`,
+        variant: "destructive",
+      });
+    }
+  };
+
   // ── Handlers ────────────────────────────────────────────────────────────────
   const handleSearch = () => { setSearch(searchInput); setPage(0); };
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: getListSalePartiesQueryKey() });
     refetch();
     startAdd();
+    setLookupRecord(null);
     setSearchInput("");
     setSearch("");
   };
@@ -142,6 +169,7 @@ export default function SalePartiesPage() {
         onSuccess: () => {
           toast({ title: "Success", description: "Sale Party created." });
           queryClient.invalidateQueries({ queryKey: getListSalePartiesQueryKey() });
+          setLookupRecord(null);
           setFormKey((k) => k + 1);
           startAdd();
         },
@@ -153,6 +181,7 @@ export default function SalePartiesPage() {
         onSuccess: () => {
           toast({ title: "Success", description: "Sale Party updated." });
           queryClient.invalidateQueries({ queryKey: getListSalePartiesQueryKey() });
+          setLookupRecord(null);
           setFormKey((k) => k + 1);
           startAdd();
         },
@@ -169,6 +198,7 @@ export default function SalePartiesPage() {
         toast({ title: "Success", description: "Sale Party deleted." });
         queryClient.invalidateQueries({ queryKey: getListSalePartiesQueryKey() });
         setIsDeleteDialogOpen(false);
+        setLookupRecord(null);
         setFormKey((k) => k + 1);
         startAdd();
       },
@@ -179,21 +209,22 @@ export default function SalePartiesPage() {
     });
   };
 
-  // Build initialData for form when editing
-  const formInitialData = mode === "edit" && selectedRow
+  // Build initialData for form: prefer lookupRecord when editing via ID field
+  const activeRecord = mode === "edit" ? (selectedRow ?? lookupRecord) : null;
+  const formInitialData = activeRecord
     ? {
-        name:          selectedRow.name,
-        nameUrdu:      selectedRow.nameUrdu   ?? "",
-        address:       selectedRow.address    ?? "",
-        city:          selectedRow.city       ?? "",
-        phone:         selectedRow.phone      ?? "",
-        mobile:        selectedRow.mobile     ?? "",
-        creditLimit:   selectedRow.creditLimit   ?? "",
-        openingCredit: selectedRow.openingCredit ?? "",
-        openingDebit:  selectedRow.openingDebit  ?? "",
-        type:          selectedRow.type       ?? "",
-        shikanjaName:  shikanjaNameById(selectedRow.shikanjaId ?? null) === "—"
-                         ? "" : shikanjaNameById(selectedRow.shikanjaId ?? null),
+        name:          activeRecord.name,
+        nameUrdu:      activeRecord.nameUrdu   ?? "",
+        address:       activeRecord.address    ?? "",
+        city:          activeRecord.city       ?? "",
+        phone:         activeRecord.phone      ?? "",
+        mobile:        activeRecord.mobile     ?? "",
+        creditLimit:   String(activeRecord.creditLimit   ?? ""),
+        openingCredit: String(activeRecord.openingCredit ?? ""),
+        openingDebit:  String(activeRecord.openingDebit  ?? ""),
+        type:          activeRecord.type       ?? "",
+        shikanjaName:  shikanjaNameById(activeRecord.shikanjaId ?? null) === "—"
+                         ? "" : shikanjaNameById(activeRecord.shikanjaId ?? null),
       }
     : undefined;
 
@@ -267,6 +298,8 @@ export default function SalePartiesPage() {
             key={formKey}
             initialData={formInitialData}
             currentId={mode === "edit" ? selectedId ?? undefined : undefined}
+            nextSerial={mode !== "edit" ? nextSerial : undefined}
+            onSerialCommit={handleSerialCommit}
             onSubmit={onSubmit}
           />
         </div>
@@ -307,7 +340,10 @@ export default function SalePartiesPage() {
                     key={row.id}
                     data-testid={`row-entity-${row.id}`}
                     className={`cursor-pointer transition-colors ${selectedId === row.id ? "bg-muted/80" : ""}`}
-                    onClick={() => startEdit(row.id)}
+                    onClick={() => {
+                      setLookupRecord(null);
+                      startEdit(row.id);
+                    }}
                   >
                     <TableCell className="text-muted-foreground text-sm">{page * pageSize + idx + 1}</TableCell>
                     <TableCell className="text-muted-foreground text-sm font-mono">{row.id}</TableCell>
