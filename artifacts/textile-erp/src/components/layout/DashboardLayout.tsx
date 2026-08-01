@@ -120,7 +120,7 @@ export function DashboardLayout({
         </div>
         <div className="flex items-center gap-2">
           <Package className="h-4 w-4 text-primary" />
-          <span className="text-sm font-semibold text-foreground">Textile ERP</span>
+          <span className="text-sm font-semibold text-foreground">PARWANA ERP</span>
         </div>
       </div>
 

@@ -34,7 +34,7 @@ const cards: NavCard[] = [
 export default function ModuleSelector() {
   return (
     <DashboardLayout
-      title="Textile ERP System"
+      title="PARWANA ERP System"
       subtitle="Select a module to continue"
     >
       <CardGrid cards={cards} columns="grid-cols-1 sm:grid-cols-3 gap-6" />
