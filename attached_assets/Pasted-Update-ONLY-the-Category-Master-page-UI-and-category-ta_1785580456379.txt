@@ -1,0 +1,96 @@
+Update ONLY the Category Master page UI and category table serial display.
+
+Do NOT analyze or modify unrelated modules, pages, database tables, APIs, Products, ERP, Stock, reports, or other forms.
+
+CATEGORY PAGE LAYOUT:
+
+Change the Category page to this exact vertical structure:
+
+1. SINGLE TOP TOOLBAR
+   Put everything into ONE horizontal toolbar bar:
+   - Refresh
+   - Save
+   - Update
+   - Delete
+   - Exit
+   - Search field
+   - Search button
+
+   Do not keep SearchToolbar as a separate bar below the main toolbar.
+
+2. CATEGORY ENTRY FORM
+   Directly below the single toolbar, show the Category Entry Form.
+
+   The form should support:
+   - Category Name
+   - Category Type / Main or Sub Category
+   - Parent Category
+
+   For Main Category:
+   - Parent Category = empty/null
+
+   For Sub Category:
+   - Parent Category dropdown shows only Main Categories.
+
+   Keep the existing working parent-child category logic.
+
+3. CATEGORY REGISTER
+   Directly below the entry form, show the complete category records table.
+
+   The table must have a proper sequential Sr. No. column:
+   1
+   2
+   3
+   4
+   5
+   ...
+
+   IMPORTANT:
+   Do NOT display database ID as the visible Sr. No.
+
+   Sr. No. must be calculated according to the current displayed/sorted records.
+
+   Example display:
+
+   Sr. No. | Category Name       | Type          | Parent Category
+   1       | Winter Warehouse     | Main Category | —
+   2       | Summer Warehouse     | Main Category | —
+   3       | Pehle Print 3Pc      | Sub Category  | Summer Warehouse
+
+   Continue sequentially from 1 for every displayed row.
+
+4. HIERARCHY
+   Keep Main Categories and Sub Categories clearly distinguishable.
+
+   Example:
+   1 | Winter Warehouse | MAIN
+   2 | Summer Warehouse | MAIN
+   3 | Pehle Print 3Pc | SUB → Summer Warehouse
+   4 | Summer Lawn 3Pcs | SUB → Summer Warehouse
+
+   Keep the existing hierarchical sorting:
+   Main Category first, followed by its Sub Categories.
+
+5. EXISTING FUNCTIONALITY
+   Preserve:
+   - Add
+   - Edit
+   - Delete
+   - Search
+   - Parent-child relationship
+   - Existing API calls
+   - Existing database structure
+
+6. VISUAL STYLE
+   Match the existing light ERP theme.
+   Keep the interface clean, compact and business/ERP-like.
+   Do not redesign the entire application.
+
+IMPORTANT:
+- Modify ONLY CategoriesPage.tsx and the minimum related component/code required for this layout.
+- Reuse the existing Toolbar, form and table components wherever possible.
+- Do not create a new category database/schema.
+- Do not modify ProductForm or ProductsPage.
+- Run TypeScript check after the change.
+- Verify the Category page visually and functionally.
+- Stop immediately after this specific task is complete.
