@@ -1,0 +1,88 @@
+Update ONLY the Shikanja Master page.
+
+Do NOT modify Purchase Party, Sale Party, Product, Category, Stock, ERP, Bills, Gate Passes, Ledgers, Reports, or unrelated pages.
+
+Make the Shikanja Master UI follow the SAME finalized layout we are using for the other Master Data pages.
+
+LAYOUT:
+
+1. ONE TOP TOOLBAR
+   - Refresh
+   - Save
+   - Update
+   - Delete
+   - Exit
+   - Search field
+   - Search button
+
+   All must be in ONE horizontal bar.
+
+2. ENTRY FORM
+   Directly below the toolbar.
+
+   Fields:
+   - ID
+   - Shikanja Name
+   - Phone Number
+
+   Use the existing Shikanja schema/API fields.
+   Do not invent additional database fields.
+
+3. REGISTER
+   Directly below the entry form.
+
+   Show existing Shikanja records in a clean table.
+
+   Columns:
+   - Sr. No.
+   - ID
+   - Shikanja Name
+   - Phone Number
+
+   Sr. No. must be sequential:
+   1, 2, 3, 4...
+
+   Do NOT use Sr. No. as the database ID.
+
+4. AUTO NEW ENTRY
+   When the page opens:
+   - Form should already be ready for a new entry.
+   - No Ctrl+F2.
+   - No New Entry button.
+   - Show the current/next available ID in the ID field according to the existing Shikanja numbering system.
+
+   After Save:
+   - Automatically reset to a new entry.
+   - Prepare the next ID.
+
+5. EDIT / DELETE
+   Preserve the existing CRUD functionality.
+   Selecting a register row should load its data into the form for editing.
+   Update and Delete must continue working normally.
+
+6. SEARCH
+   Search should work from the same top toolbar.
+   Keep the existing API/search behavior where available.
+
+7. UI STYLE
+   Match the finalized Category, Purchase Party and Sale Party pages:
+   - Light ERP theme
+   - Professional compact layout
+   - Toolbar + Search in one bar
+   - Entry form underneath
+   - Register underneath the form
+   - Clean spacing and table
+   - No dark theme
+   - No unnecessary redesign
+
+IMPORTANT:
+First inspect the existing Shikanja schema, API, form and page.
+Reuse the existing architecture and components.
+Make ONLY the changes required for this UI standardization.
+
+After implementation:
+- Run TypeScript check.
+- Verify the page renders.
+- Verify Add/Edit/Delete/Search/Refresh.
+- Verify the new-entry behavior.
+- Stop after Shikanja Master is complete.
